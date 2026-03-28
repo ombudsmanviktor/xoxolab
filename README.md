@@ -48,27 +48,25 @@ Qualquer pessoa pode hospedar sua própria instância do xoxoLAB no GitHub Pages
 
 3. **Configure o GitHub Pages**:
    - Acesse *Settings → Pages*
-   - Em *Source*, selecione **Deploy from a branch**
-   - Branch: `gh-pages` / Folder: `/ (root)`
+   - Em *Source*, selecione **GitHub Actions**
    - Clique em *Save*
 
 4. **Dispare o primeiro deploy**:
    - Acesse *Actions → Deploy to GitHub Pages*
    - Clique em *Run workflow → Run workflow*
 
-5. Aguarde ~1 minuto. A aplicação estará disponível em:
+5. Aguarde ~2 minutos. A aplicação estará disponível em:
    ```
    https://SEU_USUARIO.github.io/xoxolab/
    ```
 
 ### Domínio customizado (opcional)
 
-Para usar um domínio próprio, crie um **secret** no repositório:
-- *Settings → Secrets and variables → Actions → New repository secret*
-- Nome: `CNAME`
-- Valor: `seu.dominio.com`
-
-Configure o DNS apontando para o GitHub Pages e o próximo deploy incluirá o CNAME automaticamente.
+Para usar um domínio próprio:
+1. Edite o arquivo `public/CNAME` com o seu domínio
+2. Configure o DNS apontando para `SEU_USUARIO.github.io`
+3. Em *Settings → Pages*, informe o domínio customizado
+4. O próximo push já incluirá o CNAME no deploy
 
 ### Atualizações
 
