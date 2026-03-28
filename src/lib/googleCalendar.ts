@@ -124,11 +124,26 @@ export async function createGCalEvent(
 }
 
 export function icsDateToISO(d: string): string {
-  // Handles YYYYMMDD and YYYYMMDDTHHmmssZ
-  const bare = d.replace(/[TZ].*/, '').replace(/-/g, '')
-  if (bare.length >= 8) {
-    return `${bare.slice(0, 4)}-${bare.slice(4, 6)}-${bare.slice(6, 8)}`
+  const val = d.trim()
+  // Plain date: YYYYMMDD
+  if (/^\d{8}$/.test(val)) {
+    return `${val.slice(0, 4)}-${val.slice(4, 6)}-${val.slice(6, 8)}`
   }
+  // UTC datetime: YYYYMMDDTHHmmssZ — convert to local date
+  if (/^\d{8}T\d{6}Z$/.test(val)) {
+    const iso = `${val.slice(0,4)}-${val.slice(4,6)}-${val.slice(6,8)}T${val.slice(9,11)}:${val.slice(11,13)}:${val.slice(13,15)}Z`
+    const dt = new Date(iso)
+    const y = dt.getFullYear()
+    const m = String(dt.getMonth() + 1).padStart(2, '0')
+    const dd = String(dt.getDate()).padStart(2, '0')
+    return `${y}-${m}-${dd}`
+  }
+  // Local datetime with TZID: YYYYMMDDTHHmmss — take date part only
+  if (/^\d{8}T\d{6}$/.test(val)) {
+    return `${val.slice(0, 4)}-${val.slice(4, 6)}-${val.slice(6, 8)}`
+  }
+  // Already ISO: YYYY-MM-DD
+  if (/^\d{4}-\d{2}-\d{2}$/.test(val)) return val
   return ''
 }
 
@@ -138,6 +153,7 @@ export interface ParsedICSEvent {
   endDate?: string
   description?: string
   recurrence: 'none' | 'weekly' | 'monthly' | 'yearly'
+  uid?: string
 }
 
 export function parseICSFile(content: string): ParsedICSEvent[] {
@@ -150,28 +166,53 @@ export function parseICSFile(content: string): ParsedICSEvent[] {
     const endIdx = block.search(/END:VEVENT/i)
     const body = endIdx >= 0 ? block.slice(0, endIdx) : block
 
-    const get = (key: string): string => {
-      const re = new RegExp(`^${key}[^:\r\n]*:([^\r\n]*)`, 'im')
+    // Skip exception instances — they duplicate the master recurring event
+    if (/^RECURRENCE-ID[;:]/im.test(body)) continue
+
+    const getProp = (key: string): { value: string; params: string } => {
+      const re = new RegExp(`^${key}([^:\r\n]*):([^\r\n]*)`, 'im')
       const m = body.match(re)
-      return m
-        ? m[1].trim()
-            .replace(/\\n/g, '\n')
-            .replace(/\\,/g, ',')
-            .replace(/\\;/g, ';')
-        : ''
+      if (!m) return { value: '', params: '' }
+      return {
+        params: m[1].toUpperCase(),
+        value: m[2].trim()
+          .replace(/\\n/g, '\n')
+          .replace(/\\,/g, ',')
+          .replace(/\\;/g, ';'),
+      }
     }
 
+    const get = (key: string) => getProp(key).value
+
     const summary = get('SUMMARY')
-    const dtstart = get('DTSTART')
-    const dtend = get('DTEND')
+    const { value: dtstart } = getProp('DTSTART')
+    const { value: dtendVal, params: dtendParams } = getProp('DTEND')
     const description = get('DESCRIPTION')
     const rrule = get('RRULE')
     const status = get('STATUS')
+    const uid = get('UID')
 
     if (!summary || !dtstart || status === 'CANCELLED') continue
 
     const date = icsDateToISO(dtstart)
     if (!date) continue
+
+    let endDate: string | undefined
+    if (dtendVal) {
+      const rawEnd = icsDateToISO(dtendVal)
+      if (rawEnd) {
+        // ICS all-day DTEND is exclusive (day after last day) — subtract 1 day
+        const isDateOnly = dtendParams.includes('VALUE=DATE') || /^\d{8}$/.test(dtendVal.trim())
+        if (isDateOnly) {
+          const d = new Date(rawEnd + 'T12:00:00')
+          d.setDate(d.getDate() - 1)
+          const adj = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+          endDate = adj !== date ? adj : undefined
+        } else {
+          endDate = rawEnd !== date ? rawEnd : undefined
+        }
+      }
+    }
 
     let recurrence: ParsedICSEvent['recurrence'] = 'none'
     if (rrule) {
@@ -180,9 +221,7 @@ export function parseICSFile(content: string): ParsedICSEvent[] {
       else if (/FREQ=YEARLY/i.test(rrule)) recurrence = 'yearly'
     }
 
-    const endDate = dtend ? icsDateToISO(dtend) : undefined
-
-    events.push({ title: summary, date, endDate: endDate !== date ? endDate : undefined, description: description || undefined, recurrence })
+    events.push({ title: summary, date, endDate, description: description || undefined, recurrence, uid: uid || undefined })
   }
 
   return events

@@ -127,6 +127,7 @@ export interface Evento {
   description?: string
   sourceModule?: 'pautas' | 'avisos' | 'kanban' | 'google'
   sourceId?: string
+  importBatchId?: string
   notified7?: boolean
   notified1?: boolean
   createdAt: string

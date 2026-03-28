@@ -100,6 +100,10 @@ export function Efemerides() {
   const [gcalConnecting, setGcalConnecting] = useState(false)
   const [gcalEvents, setGcalEvents] = useState<Evento[]>([])
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const [icsBatches, setIcsBatches] = useState<Array<{ id: string; fileName: string; count: number; importedAt: string }>>(() => {
+    try { return JSON.parse(localStorage.getItem('xoxolab_ics_batches') ?? '[]') } catch { return [] }
+  })
+  const [importManageOpen, setImportManageOpen] = useState(false)
 
   const { data: storedEventos = [] } = useQuery({
     queryKey: ['eventos', projectId],
@@ -197,23 +201,64 @@ export function Efemerides() {
       toast({ title: 'Nenhum evento encontrado no arquivo .ics', variant: 'destructive' })
       return
     }
+
+    const batchId = generateId()
     const now = new Date().toISOString()
-    const newEventos = parsed.map(ev => ({
-      id: generateId(),
-      title: ev.title,
-      date: ev.date,
-      endDate: ev.endDate,
-      description: ev.description,
-      recurrence: ev.recurrence,
-      tags: ['purple'],
-      createdAt: now,
-      updatedAt: now,
-    } as Evento))
+
+    // Deduplicate: skip events already stored (same uid or same title+date)
+    const existingKeys = new Set(
+      storedEventos.map(e => `${e.title}|${e.date}`)
+    )
+    const existingUids = new Set(
+      storedEventos.map(e => (e as Evento & { uid?: string }).uid).filter(Boolean)
+    )
+
+    const newEventos = parsed
+      .filter(ev => {
+        if (ev.uid && existingUids.has(ev.uid)) return false
+        if (existingKeys.has(`${ev.title}|${ev.date}`)) return false
+        return true
+      })
+      .map(ev => ({
+        id: generateId(),
+        title: ev.title,
+        date: ev.date,
+        endDate: ev.endDate,
+        description: ev.description,
+        recurrence: ev.recurrence,
+        tags: ['purple'],
+        importBatchId: batchId,
+        createdAt: now,
+        updatedAt: now,
+      } as Evento))
+
+    if (newEventos.length === 0) {
+      toast({ title: 'Todos os eventos já estão importados', description: 'Nenhum evento novo foi adicionado.' })
+      return
+    }
+
     const merged = [...storedEventos, ...newEventos]
     await saveEventos(projectId, merged)
     queryClient.setQueryData(['eventos', projectId], merged)
-    toast({ title: `${newEventos.length} evento(s) importado(s)` })
+
+    // Save batch info in localStorage for undo
+    const batchMeta = { id: batchId, fileName: file.name, count: newEventos.length, importedAt: now }
+    const existing = JSON.parse(localStorage.getItem('xoxolab_ics_batches') ?? '[]')
+    localStorage.setItem('xoxolab_ics_batches', JSON.stringify([batchMeta, ...existing].slice(0, 10)))
+    setIcsBatches([batchMeta, ...icsBatches].slice(0, 10))
+
+    toast({ title: `${newEventos.length} evento(s) importado(s) de "${file.name}"` })
     if (fileInputRef.current) fileInputRef.current.value = ''
+  }
+
+  async function handleUndoBatch(batchId: string) {
+    const remaining = storedEventos.filter(e => e.importBatchId !== batchId)
+    await saveEventos(projectId, remaining)
+    queryClient.setQueryData(['eventos', projectId], remaining)
+    const newBatches = icsBatches.filter(b => b.id !== batchId)
+    setIcsBatches(newBatches)
+    localStorage.setItem('xoxolab_ics_batches', JSON.stringify(newBatches))
+    toast({ title: 'Importação desfeita' })
   }
 
   function handleConnectGoogle() {
@@ -397,6 +442,12 @@ export function Efemerides() {
             <Upload className="w-4 h-4" />
             Importar .ics
           </Button>
+          {icsBatches.length > 0 && (
+            <Button variant="outline" size="sm" onClick={() => setImportManageOpen(true)} title="Gerenciar importações ICS">
+              <Repeat className="w-4 h-4" />
+              {icsBatches.length} importação{icsBatches.length !== 1 ? 'ões' : ''}
+            </Button>
+          )}
           {gcalToken ? (
             <Button variant="outline" size="sm" onClick={handleDisconnectGoogle} className="text-blue-600 border-blue-200 hover:bg-blue-50" title="Google Calendar conectado — clique para desconectar">
               <Link2Off className="w-4 h-4" />
@@ -597,6 +648,42 @@ export function Efemerides() {
             <Button onClick={handleSave} disabled={saving || !evTitle.trim() || !evDate}>
               {saving ? 'Salvando…' : editEvento ? 'Atualizar' : 'Criar'}
             </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Manage ICS imports dialog */}
+      <Dialog open={importManageOpen} onOpenChange={setImportManageOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Importações ICS</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-2 max-h-80 overflow-y-auto">
+            {icsBatches.length === 0 ? (
+              <p className="text-sm text-gray-400 text-center py-4">Nenhuma importação registrada</p>
+            ) : (
+              icsBatches.map(batch => (
+                <div key={batch.id} className="flex items-center justify-between bg-gray-50 rounded-lg px-3 py-2.5">
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium text-gray-900 truncate">{batch.fileName}</p>
+                    <p className="text-xs text-gray-400">
+                      {batch.count} evento{batch.count !== 1 ? 's' : ''} · {new Date(batch.importedAt).toLocaleString('pt-BR')}
+                    </p>
+                  </div>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="ml-3 flex-shrink-0 text-red-500 border-red-200 hover:bg-red-50 text-xs"
+                    onClick={() => handleUndoBatch(batch.id)}
+                  >
+                    Desfazer
+                  </Button>
+                </div>
+              ))
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setImportManageOpen(false)}>Fechar</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
