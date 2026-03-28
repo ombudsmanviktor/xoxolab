@@ -291,11 +291,11 @@ export function Avisos() {
     const el = document.getElementById('avisos-matrix')
     if (!el) return
     try {
-      const { default: html2canvas } = await import('html2canvas')
-      const canvas = await html2canvas(el, { scale: 2, backgroundColor: '#f8f7ff', useCORS: true, logging: false })
+      const { toPng } = await import('html-to-image')
+      const dataUrl = await toPng(el, { pixelRatio: 2, backgroundColor: '#f8f7ff' })
       const link = document.createElement('a')
       link.download = 'avisos.png'
-      link.href = canvas.toDataURL('image/png')
+      link.href = dataUrl
       link.click()
     } catch (err) {
       toast({ title: 'Erro ao exportar PNG', description: String(err), variant: 'destructive' })
@@ -306,20 +306,19 @@ export function Avisos() {
     const el = document.getElementById('avisos-matrix')
     if (!el) return
     try {
-      const { default: html2canvas } = await import('html2canvas')
+      const { toPng } = await import('html-to-image')
       const { jsPDF } = await import('jspdf')
-      const canvas = await html2canvas(el, { scale: 2, backgroundColor: '#ffffff', useCORS: true, logging: false })
-      const imgData = canvas.toDataURL('image/png')
+      const imgData = await toPng(el, { pixelRatio: 2, backgroundColor: '#ffffff' })
+      const img = new Image()
+      img.src = imgData
+      await new Promise(r => { img.onload = r })
       const pdf = new jsPDF({ orientation: 'landscape', format: 'a4', unit: 'mm' })
       const pageW = pdf.internal.pageSize.getWidth()
       const pageH = pdf.internal.pageSize.getHeight()
-      const ratio = canvas.width / canvas.height
+      const ratio = img.width / img.height
       let imgW = pageW - 20
       let imgH = imgW / ratio
-      if (imgH > pageH - 20) {
-        imgH = pageH - 20
-        imgW = imgH * ratio
-      }
+      if (imgH > pageH - 20) { imgH = pageH - 20; imgW = imgH * ratio }
       pdf.addImage(imgData, 'PNG', (pageW - imgW) / 2, 10, imgW, imgH)
       pdf.save('avisos.pdf')
     } catch (err) {
