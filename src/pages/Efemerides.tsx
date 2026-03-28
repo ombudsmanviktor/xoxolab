@@ -11,7 +11,7 @@ import { loadEventos, saveEventos, loadPautas, loadKanbanCards } from '@/lib/sto
 import { generateId, formatDate, todayISO } from '@/lib/utils'
 import {
   requestGoogleToken, revokeGoogleToken, fetchGCalEvents, createGCalEvent,
-  parseICSFile, getSavedClientId, saveClientId,
+  parseICSFile, getSavedClientId, saveClientId, getSavedToken, clearSavedToken,
   type GCalEvent,
 } from '@/lib/googleCalendar'
 import { Button } from '@/components/ui/button'
@@ -93,7 +93,7 @@ export function Efemerides() {
   const [saving, setSaving] = useState(false)
 
   // Google Calendar integration
-  const [gcalToken, setGcalToken] = useState<string | null>(null)
+  const [gcalToken, setGcalToken] = useState<string | null>(() => getSavedToken())
   const [gcalClientId, setGcalClientId] = useState(getSavedClientId)
   const [gcalDialogOpen, setGcalDialogOpen] = useState(false)
   const [gcalClientIdInput, setGcalClientIdInput] = useState(getSavedClientId)
@@ -105,6 +105,20 @@ export function Efemerides() {
   })
   const [importManageOpen, setImportManageOpen] = useState(false)
   const [clearAllOpen, setClearAllOpen] = useState(false)
+
+  // Silent re-auth on mount: if token expired but clientId is saved, try silent refresh
+  useEffect(() => {
+    if (gcalToken) return // already have a valid token
+    const savedId = getSavedClientId()
+    if (!savedId) return
+    requestGoogleToken(
+      savedId,
+      (token) => { setGcalToken(token) },
+      () => { /* silent failure — user will manually reconnect */ },
+      true, // silent
+    )
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const { data: storedEventos = [] } = useQuery({
     queryKey: ['eventos', projectId],
@@ -170,6 +184,7 @@ export function Efemerides() {
       })
       .catch(err => {
         if (String(err).includes('TOKEN_EXPIRED')) {
+          clearSavedToken()
           setGcalToken(null)
           toast({ title: 'Sessão Google expirada', description: 'Reconecte o Google Calendar.', variant: 'destructive' })
         }
@@ -278,6 +293,7 @@ export function Efemerides() {
 
   function handleDisconnectGoogle() {
     if (gcalToken) revokeGoogleToken(gcalToken)
+    clearSavedToken()
     setGcalToken(null)
     setGcalEvents([])
   }

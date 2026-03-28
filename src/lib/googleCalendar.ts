@@ -4,6 +4,8 @@
 const CAL_SCOPE = 'https://www.googleapis.com/auth/calendar.events'
 const CAL_API = 'https://www.googleapis.com/calendar/v3'
 const LS_CLIENT_ID = 'xoxolab_gcal_client_id'
+const LS_TOKEN     = 'xoxolab_gcal_token'
+const LS_TOKEN_EXP = 'xoxolab_gcal_token_exp'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type GIS = any
@@ -31,6 +33,8 @@ function loadGIS(): Promise<void> {
   })
 }
 
+// ─── Client ID ────────────────────────────────────────────────────────────
+
 export function getSavedClientId(): string {
   return localStorage.getItem(LS_CLIENT_ID) ?? ''
 }
@@ -40,10 +44,45 @@ export function saveClientId(id: string): void {
   else localStorage.removeItem(LS_CLIENT_ID)
 }
 
+// ─── Token persistence ────────────────────────────────────────────────────
+
+/** Returns the stored token if it has not expired yet; otherwise null. */
+export function getSavedToken(): string | null {
+  const token = localStorage.getItem(LS_TOKEN)
+  const exp   = Number(localStorage.getItem(LS_TOKEN_EXP) ?? 0)
+  if (!token || Date.now() > exp) {
+    localStorage.removeItem(LS_TOKEN)
+    localStorage.removeItem(LS_TOKEN_EXP)
+    return null
+  }
+  return token
+}
+
+/** Persist token with its expiry (Google issues tokens valid for 3600 s). */
+export function persistToken(token: string, expiresIn = 3600): void {
+  localStorage.setItem(LS_TOKEN, token)
+  // Subtract 60 s buffer so we refresh before the server actually rejects it
+  localStorage.setItem(LS_TOKEN_EXP, String(Date.now() + (expiresIn - 60) * 1000))
+}
+
+export function clearSavedToken(): void {
+  localStorage.removeItem(LS_TOKEN)
+  localStorage.removeItem(LS_TOKEN_EXP)
+}
+
+// ─── OAuth ────────────────────────────────────────────────────────────────
+
+/**
+ * Request an OAuth access token.
+ * - silent = false (default): shows consent screen (first-time or explicit reconnect)
+ * - silent = true: no popup — succeeds silently if consent was previously granted,
+ *   otherwise calls onError quietly (caller should NOT show an error to the user)
+ */
 export async function requestGoogleToken(
   clientId: string,
   onToken: (token: string) => void,
   onError: (msg: string) => void,
+  silent = false,
 ): Promise<void> {
   try {
     await loadGIS()
@@ -53,10 +92,14 @@ export async function requestGoogleToken(
       scope: CAL_SCOPE,
       callback: (resp: GIS) => {
         if (resp.error) { onError(resp.error_description ?? resp.error); return }
-        if (resp.access_token) onToken(resp.access_token)
+        if (resp.access_token) {
+          persistToken(resp.access_token, resp.expires_in ?? 3600)
+          onToken(resp.access_token)
+        }
       },
     })
-    _tokenClient.requestAccessToken({ prompt: 'consent' })
+    // prompt='' → silent refresh; prompt='consent' → show UI
+    _tokenClient.requestAccessToken({ prompt: silent ? '' : 'consent' })
   } catch (e) {
     onError(String(e))
   }
@@ -66,6 +109,8 @@ export function revokeGoogleToken(token: string): void {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ;(window as any).google?.accounts?.oauth2?.revoke(token, () => {})
 }
+
+// ─── Calendar API ─────────────────────────────────────────────────────────
 
 export interface GCalEvent {
   id: string
@@ -122,6 +167,8 @@ export async function createGCalEvent(
     throw new Error(`Google Calendar API: ${res.status}`)
   }
 }
+
+// ─── ICS parser ───────────────────────────────────────────────────────────
 
 export function icsDateToISO(d: string): string {
   const val = d.trim()
