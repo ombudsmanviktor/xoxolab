@@ -436,13 +436,10 @@ export function Avisos() {
 
           <div className="flex items-stretch gap-3">
             {/* Left axis label: Baixa Iminência */}
-            <div className="flex flex-col items-center justify-center flex-shrink-0 select-none gap-1.5">
-              <ArrowLeft className="w-3.5 h-3.5 text-amber-700" />
-              <div
-                className="bg-amber-100 text-amber-800 text-xs font-bold px-3 py-1.5 rounded-full"
-                style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)' }}
-              >
-                Baixa Iminência
+            <div className="flex items-center justify-center flex-shrink-0 select-none">
+              <div className="bg-amber-100 text-amber-800 text-xs font-bold px-3 py-2 rounded-full flex flex-col items-center gap-1.5">
+                <ArrowLeft className="w-3.5 h-3.5" />
+                <span style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)' }}>Baixa Iminência</span>
               </div>
             </div>
 
@@ -493,14 +490,11 @@ export function Avisos() {
             </div>
 
             {/* Right axis label: Alta Iminência */}
-            <div className="flex flex-col items-center justify-center flex-shrink-0 select-none gap-1.5">
-              <div
-                className="bg-amber-100 text-amber-800 text-xs font-bold px-3 py-1.5 rounded-full"
-                style={{ writingMode: 'vertical-rl' }}
-              >
-                Alta Iminência
+            <div className="flex items-center justify-center flex-shrink-0 select-none">
+              <div className="bg-amber-100 text-amber-800 text-xs font-bold px-3 py-2 rounded-full flex flex-col items-center gap-1.5">
+                <span style={{ writingMode: 'vertical-rl' }}>Alta Iminência</span>
+                <ArrowRight className="w-3.5 h-3.5" />
               </div>
-              <ArrowRight className="w-3.5 h-3.5 text-amber-700" />
             </div>
           </div>
 
