@@ -64,7 +64,7 @@ function pautaToKanbanCard(item: PautaItem): KanbanCard {
 
 // ─── Timeline ─────────────────────────────────────────────────────────────
 
-function KanbanTimeline({ cards, zoom, totalWidth }: { cards: KanbanCard[]; zoom: number; totalWidth: number }) {
+function KanbanTimeline({ cards, totalWidth }: { cards: KanbanCard[]; totalWidth: number }) {
   const today = new Date()
   const cardsWithDates = cards.filter(c => c.dueDate && isValid(parseISO(c.dueDate)))
 
@@ -643,7 +643,7 @@ export function Kanban() {
       {/* Board wrapper (timeline + columns scroll together) */}
       <div className="overflow-x-auto rounded-xl border border-gray-200" ref={boardRef}>
         {/* Timeline */}
-        <KanbanTimeline cards={[...allCards, ...pautasCards]} zoom={zoom} totalWidth={totalWidth} />
+        <KanbanTimeline cards={[...allCards, ...pautasCards]} totalWidth={totalWidth} />
 
         {/* Divider between timeline and board */}
         <div className="border-t-4 border-gray-200 bg-gray-100 px-4 py-1.5 flex items-center gap-2">

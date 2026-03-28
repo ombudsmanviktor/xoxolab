@@ -4,7 +4,7 @@
 
 xoxoLAB é uma aplicação web para equipes de comunicação e redes sociais organizarem pautas, aprovações, políticas editoriais e muito mais — sem depender de servidores próprios. Todos os dados são armazenados em um repositório GitHub privado no formato YAML.
 
-🔗 **Demo:** [ombudsmanviktor.github.io/xoxolab](https://ombudsmanviktor.github.io/xoxolab/)
+🔗 **Demo:** [xoxolab.ombudsmanviktor.me](https://xoxolab.ombudsmanviktor.me)
 
 ---
 
