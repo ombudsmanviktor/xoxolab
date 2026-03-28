@@ -1,13 +1,12 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Eye, EyeOff, ChevronDown, ChevronUp, Mail, Lock, Github, GitBranch, Bell, FlaskConical } from 'lucide-react'
+import { Eye, EyeOff, Mail, Lock, Github, GitBranch, FlaskConical } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { DEMO_PROJECT_ID } from '@/lib/demoStore'
 import type { GitHubConfig } from '@/lib/github'
-import type { EmailJSConfig } from '@/lib/emailjs'
 
 export function Login() {
   const { signIn, signInDemo, session } = useAuth()
@@ -18,10 +17,6 @@ export function Login() {
   const [repo, setRepo] = useState('')
   const [branch, setBranch] = useState('main')
   const [showPat, setShowPat] = useState(false)
-  const [emailExpanded, setEmailExpanded] = useState(false)
-  const [ejsServiceId, setEjsServiceId] = useState('')
-  const [ejsTemplateId, setEjsTemplateId] = useState('')
-  const [ejsPublicKey, setEjsPublicKey] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
@@ -58,12 +53,7 @@ export function Login() {
       branch: branch.trim() || 'main',
     }
 
-    const emailJSConfig: EmailJSConfig | undefined =
-      ejsServiceId && ejsTemplateId && ejsPublicKey
-        ? { serviceId: ejsServiceId, templateId: ejsTemplateId, publicKey: ejsPublicKey }
-        : undefined
-
-    const result = await signIn(email.trim(), githubConfig, emailJSConfig)
+    const result = await signIn(email.trim(), githubConfig)
     setLoading(false)
 
     if (!result.ok) {
@@ -88,16 +78,12 @@ export function Login() {
                 </linearGradient>
               </defs>
               <rect width="64" height="64" rx="18" fill="url(#lg)"/>
-              {/* Column headers */}
               <rect x="8"  y="11" width="14" height="5" rx="2.5" fill="white" opacity="0.55"/>
               <rect x="25" y="11" width="14" height="5" rx="2.5" fill="white" opacity="0.55"/>
               <rect x="42" y="11" width="14" height="5" rx="2.5" fill="white" opacity="0.55"/>
-              {/* Column 1 */}
               <rect x="8"  y="19" width="14" height="12" rx="3" fill="white" opacity="0.9"/>
               <rect x="8"  y="34" width="14" height="10" rx="3" fill="white" opacity="0.65"/>
-              {/* Column 2 */}
               <rect x="25" y="19" width="14" height="12" rx="3" fill="white" opacity="0.9"/>
-              {/* Column 3 */}
               <rect x="42" y="19" width="14" height="10" rx="3" fill="white" opacity="0.9"/>
               <rect x="42" y="32" width="14" height="10" rx="3" fill="white" opacity="0.65"/>
               <rect x="42" y="45" width="14" height="7"  rx="3" fill="white" opacity="0.35"/>
@@ -181,44 +167,6 @@ export function Login() {
                   className="pl-9"
                 />
               </div>
-            </div>
-
-            {/* EmailJS collapsible */}
-            <div className="border border-gray-100 rounded-lg overflow-hidden">
-              <button
-                type="button"
-                onClick={() => setEmailExpanded(v => !v)}
-                className="w-full flex items-center justify-between px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors"
-              >
-                <div className="flex items-center gap-2">
-                  <Bell className="w-4 h-4 text-purple-500" />
-                  Notificações por Email (opcional)
-                </div>
-                {emailExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-              </button>
-
-              {emailExpanded && (
-                <div className="px-4 pb-4 space-y-3 border-t border-gray-100 pt-3">
-                  <p className="text-xs text-gray-500">
-                    Configure uma conta no <a href="https://www.emailjs.com" target="_blank" rel="noopener noreferrer" className="text-purple-600 underline">EmailJS</a> para receber notificações quando for @mencionado.
-                  </p>
-                  <div className="space-y-1.5">
-                    <Label htmlFor="ejs-service">Service ID</Label>
-                    <Input id="ejs-service" placeholder="service_xxxxxxx" value={ejsServiceId} onChange={e => setEjsServiceId(e.target.value)} />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label htmlFor="ejs-template">Template ID</Label>
-                    <Input id="ejs-template" placeholder="template_xxxxxxx" value={ejsTemplateId} onChange={e => setEjsTemplateId(e.target.value)} />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label htmlFor="ejs-key">Public Key</Label>
-                    <Input id="ejs-key" placeholder="XXXXXXXXXXXXXXXXXX" value={ejsPublicKey} onChange={e => setEjsPublicKey(e.target.value)} />
-                  </div>
-                  <p className="text-xs text-gray-400">
-                    O template deve ter as variáveis: <code className="bg-gray-100 px-1 rounded">{'{{to_email}}'}</code>, <code className="bg-gray-100 px-1 rounded">{'{{from_email}}'}</code>, <code className="bg-gray-100 px-1 rounded">{'{{project_name}}'}</code>, <code className="bg-gray-100 px-1 rounded">{'{{module_name}}'}</code>, <code className="bg-gray-100 px-1 rounded">{'{{excerpt}}'}</code>
-                  </p>
-                </div>
-              )}
             </div>
 
             {error && (

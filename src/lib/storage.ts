@@ -58,7 +58,7 @@ async function readYaml<T>(path: string): Promise<T | null> {
     return yaml.load(text) as T
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : String(err)
-    if (msg.includes('Not Found') || msg.includes('404')) return null
+    if (msg.includes('Not Found') || msg.includes('404') || msg.toLowerCase().includes('empty')) return null
     throw err
   }
 }

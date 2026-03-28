@@ -36,6 +36,7 @@ interface AuthContextType {
   ) => Promise<{ ok: boolean; error?: string }>
   signInDemo: () => void
   signOut: () => void
+  updateEmailJSConfig: (cfg: EmailJSConfig | null) => void
 }
 
 const AuthContext = createContext<AuthContextType | null>(null)
@@ -98,10 +99,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setSession(null)
   }
 
+  function updateEmailJSConfig(cfg: EmailJSConfig | null) {
+    if (cfg) {
+      saveEmailJSConfig(cfg)
+    } else {
+      clearEmailJSConfig()
+    }
+    setSession(prev => {
+      if (!prev) return prev
+      const updated: AuthSession = { ...prev, emailJSConfig: cfg ?? undefined }
+      if (!prev.isDemo) {
+        localStorage.setItem(SESSION_KEY, JSON.stringify(updated))
+      }
+      return updated
+    })
+  }
+
   const isDemoMode = session?.isDemo === true
 
   return (
-    <AuthContext.Provider value={{ session, loading, isDemoMode, signIn, signInDemo, signOut }}>
+    <AuthContext.Provider value={{ session, loading, isDemoMode, signIn, signInDemo, signOut, updateEmailJSConfig }}>
       {children}
     </AuthContext.Provider>
   )

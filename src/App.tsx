@@ -6,6 +6,7 @@ import { ProjectLayout } from '@/components/layout/ProjectLayout'
 import { ProtectedRoute } from '@/components/layout/ProtectedRoute'
 import { Login } from '@/pages/Login'
 import { Projects } from '@/pages/Projects'
+import { Settings } from '@/pages/Settings'
 import { Avisos } from '@/pages/Avisos'
 import { Pautas } from '@/pages/Pautas'
 import { Kanban } from '@/pages/Kanban'
@@ -38,6 +39,7 @@ export default function App() {
             >
               <Route index element={<Navigate to="/projects" replace />} />
               <Route path="/projects" element={<Projects />} />
+              <Route path="/settings" element={<Settings />} />
               <Route path="/projects/:projectId" element={<ProjectLayout />}>
                 <Route index element={<Navigate to="avisos" replace />} />
                 <Route path="avisos" element={<Avisos />} />

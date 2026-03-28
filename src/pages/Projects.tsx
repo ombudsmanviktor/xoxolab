@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { Plus, Settings, Users, LogOut, Folder, Trash2, FlaskConical } from 'lucide-react'
+import { Plus, Settings, Users, LogOut, Folder, Trash2, FlaskConical, SlidersHorizontal } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 import { listProjects, createProject, saveProjectMeta, deleteProject } from '@/lib/storage'
 import { registerUserEmail } from '@/lib/storage'
@@ -126,6 +126,9 @@ export function Projects() {
         </div>
         <div className="flex items-center gap-3">
           <span className="text-sm text-gray-500 hidden sm:block">{session?.email}</span>
+          <Button variant="ghost" size="icon" onClick={() => navigate('/settings')} title="Configurações da conta">
+            <SlidersHorizontal className="w-4 h-4" />
+          </Button>
           <Button variant="ghost" size="icon" onClick={signOut} title="Sair">
             <LogOut className="w-4 h-4" />
           </Button>
