@@ -1,7 +1,7 @@
 ================================================================================
 xoxoLAB — HISTORY LOG
-Session: 2fad8365-4ebd-449c-bde1-ecc9253b7cbc
-Messages: 190
+Sessions: 1
+Messages: 252
 ================================================================================
 
 [001] USER — 2026-03-28T03:08:34.982Z
@@ -2005,4 +2005,374 @@ All screenshots look great. Now let me generate the full markdown documentation 
 [190] ASSISTANT — 2026-03-28T19:39:35.977Z
 ------------------------------------------------------------
 Now let me write the full documentation markdown and the history log in parallel.
+
+[191] ASSISTANT — 2026-03-28T20:31:49.060Z
+------------------------------------------------------------
+Good. Now let me write the full documentation markdown.
+
+[192] ASSISTANT — 2026-03-28T20:35:40.855Z
+------------------------------------------------------------
+Tudo gerado. Aqui o resumo do que foi criado:
+
+---
+
+**`DOCUMENTATION.md`** (288 linhas) — cobre:
+- Descrição geral do software e características principais
+- Stack técnica completa com versões (TypeScript, React 19, Vite 7, Tailwind 4, etc.)
+- Screenshots de cada tela embutidas
+- Descrição detalhada dos 8 módulos e funcionalidades
+- Estrutura de dados no GitHub
+- 3 opções de instalação: instância pública, fork via GitHub Pages, desenvolvimento local
+- Configuração de notificações EmailJS
+
+**`screenshots/`** — 10 imagens PNG (1280×800):
+`00-login` · `01-projects` · `02-avisos` · `03-pautas` · `04-kanban` · `05-efemerides` · `06-politicas` · `07-recursos` · `08-equipe` · `09-senhas`
+
+**`history.log`** — 2008 linhas com 190 mensagens da sessão completa de desenvolvimento (user + assistant), com timestamps e truncagem de respostas longas.
+
+[193] USER — 2026-03-28T20:35:41.299Z
+------------------------------------------------------------
+<task-notification>
+<task-id>bhbyyuw79</task-id>
+<tool-use-id>toolu_01F1GYMryXjLahLVTFqmpaZZ</tool-use-id>
+<output-file>/private/tmp/claude-501/-Users-viktor-Documents-Claude-xoxoLAB/2fad8365-4ebd-449c-bde1-ecc9253b7cbc/tasks/bhbyyuw79.output</output-file>
+<status>completed</status>
+<summary>Background command "Check if gh CLI is available" completed (exit code 0)</summary>
+</task-notification>
+Read the output file to retrieve the result: /private/tmp/claude-501/-Users-viktor-Documents-Claude-xoxoLAB/2fad8365-4ebd-449c-bde1-ecc9253b7cbc/tasks/bhbyyuw79.output
+
+[194] ASSISTANT — 2026-03-28T20:35:47.802Z
+------------------------------------------------------------
+`gh` CLI foi instalado via Homebrew. Não há nenhuma ação necessária — o resultado é apenas informativo da tarefa em background que rodou durante o deploy.
+
+[195] USER — 2026-03-28T20:40:38.762Z
+------------------------------------------------------------
+Você já fez o upload dos screenshots e dos demais arquivos no GitHub?
+
+[196] ASSISTANT — 2026-03-28T20:40:41.617Z
+------------------------------------------------------------
+Não, ainda não. Deixa eu fazer isso agora.
+
+[197] ASSISTANT — 2026-03-28T20:40:53.519Z
+------------------------------------------------------------
+Feito. Os 12 arquivos foram enviados ao repositório:
+
+- `DOCUMENTATION.md`
+- `history.log`
+- `screenshots/` — 10 PNGs (login, projetos e os 8 módulos)
+
+[198] USER — 2026-03-28T20:43:03.053Z
+------------------------------------------------------------
+Tomando a definição do pqLAB como exemplo abaixo, elabore uma definição similar para o xoxoLAB: O pqLAB é uma ferramenta web de organização de pesquisa qualitativa que centraliza em uma única interface seis instrumentos de trabalho acadêmico: diário de campo, listas, tarefas, favoritos, fichamentos e planos de curso, todos conectados por [[links internos]] navegáveis. Os dados são armazenados diretamente no repositório GitHub privado do próprio usuário, sem servidor intermediário, e uma visualização em grafo revela automaticamente as conexões temáticas entre o material registrado, formando um mapa mental, capaz de fornecer *insights* sobre sua própria investigação.
+
+[199] ASSISTANT — 2026-03-28T20:43:08.031Z
+------------------------------------------------------------
+O xoxoLAB é uma ferramenta web de gestão editorial colaborativa que reúne em uma única interface oito instrumentos de trabalho para equipes de comunicação e mídias sociais: quadro de avisos, pautas, kanban, efemérides, políticas, recursos, equipe e senhas, todos conectados por um sistema de @menções que notifica colaboradores em tempo real. Os dados são armazenados diretamente no repositório GitHub privado da própria equipe, sem servidor intermediário, e múltiplos projetos podem ser gerenciados simultaneamente por diferentes grupos de colaboradores, cada um com seu próprio espaço isolado de trabalho.
+
+[200] USER — 2026-03-28T20:44:52.455Z
+------------------------------------------------------------
+Esta descrição está correta para o xoxoLAB? O xoxoLAB foi desenvolvido em TypeScript com React 19 como framework de interface, utilizando Vite 7 como bundler e servidor de desenvolvimento. A estilização é feita com Tailwind CSS v4 (via plugin oficial para Vite). Para roteamento foi utilizado React Router v7 com rotas aninhadas, e o gerenciamento de dados assíncronos é feito com TanStack Query v5. Os componentes de interface seguem o padrão shadcn/ui, construídos sobre primitivos Radix UI com utilitários cva, clsx e tailwind-merge. Recursos adicionais incluem @hello-pangea/dnd para drag-and-drop no kanban, Recharts para gráficos, jsPDF + jspdf-autotable para exportação em PDF, xlsx para planilhas e js-yaml para serialização dos dados e SVG puro para o grafo, além de opcionalmente integrar com Firebase.
+
+Toda a persistência de dados ocorre diretamente no repositório GitHub do usuário por meio da GitHub Contents API (REST), sem banco de dados externo. Os dados são armazenados em arquivos YAML e anexos em base64, organizados por entidade no repositório. O projeto não depende de nenhum serviço de backend próprio — o navegador se comunica diretamente com as APIs do GitHub e do Firebase.
+
+[201] ASSISTANT — 2026-03-28T20:45:02.263Z
+------------------------------------------------------------
+Não, há várias imprecisões. Aqui a versão corrigida:
+
+**Correto:**
+- TypeScript + React 19 + Vite 7 + Tailwind CSS v4 + React Router v7 + TanStack Query v5 + Radix UI + cva/clsx/tailwind-merge + @hello-pangea/dnd + jsPDF + jspdf-autotable + xlsx + js-yaml + GitHub Contents API (REST) + YAML + sem backend próprio
+
+**Incorreto ou ausente no xoxoLAB:**
+- **shadcn/ui** — os componentes UI foram construídos diretamente sobre Radix UI, sem usar shadcn/ui
+- **Recharts** — não utilizado; não há gráficos no xoxoLAB
+- **SVG puro para grafo** — não existe grafo no xoxoLAB (esse recurso é exclusivo do pqLAB)
+- **Firebase** — não utilizado; foi explicitamente removido da stack
+- **"repositório GitHub do usuário"** — no xoxoLAB o repositório de dados é separado do repositório da aplicação; é um repositório privado da equipe, não necessariamente do usuário que acessa
+
+**Adições que faltaram:**
+- **html2canvas** — para exportação em PNG e PDF baseado em screenshot
+- **docx** — para exportação em Word (.docx)
+- **react-markdown + remark-gfm** — renderização de Markdown nos módulos
+- **date-fns** — manipulação de datas (Efemérides, Kanban)
+- **@emailjs/browser** — notificações por e-mail de @menções e lembretes de eventos
+
+[202] USER — 2026-03-28T20:45:22.278Z
+------------------------------------------------------------
+Elabore então um texto similar ao exemplo anterior
+
+[203] ASSISTANT — 2026-03-28T20:45:28.428Z
+------------------------------------------------------------
+O xoxoLAB é desenvolvido em TypeScript com React 19 como framework de interface, utilizando Vite 7 como bundler e servidor de desenvolvimento. A estilização é feita com Tailwind CSS v4 via plugin oficial para Vite, e os componentes de interface são construídos diretamente sobre primitivos Radix UI com utilitários cva, clsx e tailwind-merge. O roteamento é feito com React Router v7 com rotas aninhadas por projeto, e o gerenciamento de dados assíncronos é feito com TanStack Query v5. Recursos adicionais incluem @hello-pangea/dnd para drag-and-drop em pautas e kanban, date-fns para manipulação de datas, react-markdown com remark-gfm para renderização de Markdown, jsPDF e jspdf-autotable para exportação em PDF, html2canvas para exportação em PNG, xlsx para planilhas, docx para documentos Word e js-yaml para serialização dos dados, além de @emailjs/browser para notificações opcionais por e-mail.
+
+Toda a persistência de dados ocorre diretamente em um repositório GitHub privado da equipe por meio da GitHub Contents API (REST), sem banco de dados externo. Os dados são armazenados em arquivos YAML organizados por projeto e por módulo no repositório. O projeto não depende de nenhum serviço de backend próprio — o navegador se comunica diretamente com a API do GitHub, e cada colaborador autentica-se com seu próprio Personal Access Token.
+
+[204] USER — 2026-03-28T20:58:33.355Z
+------------------------------------------------------------
+No Kanban, há cards que, mesmo clicando no título, não consigo editar. Insira uma opção facilitada de edição para esses cards, talvez com um ícone de lápis. No mesmo módulo, lembre-se de que, ao clicar nos botões de lupa, a linha do tempo deve aproximar ou distanciar, mostrando mais ou menos meses (embora conserve a mesma largura). Atente ainda ao fato de que, no módulo Kanban, se eu movo um card da coluna Pautas para outra área, esse movimento deve ser persistente e o card deve também sumir da lista do módulo Pautas. Por outro lado, se eu insiro um novo card na coluna Pautas do módulo Kanban, esse card deve ficar ali de modo persistente e aparecer também na lista do módulo Pautas (ainda em em uma área sem seção).
+
+No módulo Efemérides, todas as datas inseridas de eventos devem aparecer também na linha do tempo do módulo Kanban e vice-versa.
+
+Confirme também que as datas inseridas no módulo Efemérides, quando integrado ao Google Calendar, serão inseridas no calendário do Google automaticamente.
+
+Corrija estas questões e suba a nova versão em seguida no GitHub
+
+[205] ASSISTANT — 2026-03-28T20:58:42.800Z
+------------------------------------------------------------
+Deixa eu primeiro ler os arquivos para entender o estado atual antes de implementar.
+
+[206] ASSISTANT — 2026-03-28T20:59:06.000Z
+------------------------------------------------------------
+Now let me read Efemérides and Pautas, and the storage lib.
+
+[207] ASSISTANT — 2026-03-28T21:00:04.851Z
+------------------------------------------------------------
+Now I have a full picture. Let me plan and implement all changes:
+
+[208] ASSISTANT — 2026-03-28T21:00:16.179Z
+------------------------------------------------------------
+Good. Now let me implement all changes starting with Kanban.tsx:
+
+[209] ASSISTANT — 2026-03-28T21:00:35.836Z
+------------------------------------------------------------
+Now update the `KanbanTimeline` component to accept `monthCount` and `eventos`:
+
+[210] ASSISTANT — 2026-03-28T21:00:56.284Z
+------------------------------------------------------------
+Now update `KanbanCardView` to add pencil icon and make pautas cards editable:
+
+[211] ASSISTANT — 2026-03-28T21:01:07.860Z
+------------------------------------------------------------
+Now close the card div properly (the outer div no longer has onClick):
+
+[212] ASSISTANT — 2026-03-28T21:01:12.786Z
+------------------------------------------------------------
+Good. Now update `openEdit` to allow editing pautas-derived cards, and `openNew` to allow Pautas column:
+
+[213] ASSISTANT — 2026-03-28T21:01:17.713Z
+------------------------------------------------------------
+Now add the `loadEventos` query and fix `openNew` to allow Pautas column, and add "+" button to Pautas column:
+
+[214] ASSISTANT — 2026-03-28T21:01:24.888Z
+------------------------------------------------------------
+Now fix `openNew` to allow pautas column and update `handleSave` to create PautaItem when saving to pautas column:
+
+[215] ASSISTANT — 2026-03-28T21:01:31.307Z
+------------------------------------------------------------
+Now update `handleSave` to create a PautaItem when saving to pautas column, and also handle editing pautas-derived cards:
+
+[216] ASSISTANT — 2026-03-28T21:01:50.058Z
+------------------------------------------------------------
+Now update `handleSave` to also handle editing pautas-derived cards (update the PautaItem):
+
+[217] ASSISTANT — 2026-03-28T21:02:11.737Z
+------------------------------------------------------------
+Now fix zoom to change month count, and update `onDragEnd` to delete PautaItem on move:
+
+[218] ASSISTANT — 2026-03-28T21:02:19.833Z
+------------------------------------------------------------
+Now update the `KanbanTimeline` call to pass `monthCount` and `eventos`, and add "+" button to Pautas column header:
+
+[219] ASSISTANT — 2026-03-28T21:02:24.288Z
+------------------------------------------------------------
+Now add "+" to Pautas column header and fix `onDragEnd` to delete PautaItem when moving out of pautas:
+
+[220] ASSISTANT — 2026-03-28T21:02:29.406Z
+------------------------------------------------------------
+Now fix `onDragEnd` to delete PautaItem when moving from Pautas column:
+
+[221] ASSISTANT — 2026-03-28T21:02:40.530Z
+------------------------------------------------------------
+Also update the dialog's column select to include Pautas and update the zoom button labels:
+
+[222] ASSISTANT — 2026-03-28T21:02:51.784Z
+------------------------------------------------------------
+Now add `createGCalEvent` to `googleCalendar.ts` and update the scope:
+
+[223] ASSISTANT — 2026-03-28T21:03:01.955Z
+------------------------------------------------------------
+Now add the `createGCalEvent` function at the end of the file:
+
+[224] ASSISTANT — 2026-03-28T21:03:13.300Z
+------------------------------------------------------------
+Now update `Efemerides.tsx` to import `createGCalEvent` and call it on save:
+
+[225] ASSISTANT — 2026-03-28T21:03:26.405Z
+------------------------------------------------------------
+Now let's do a build check:
+
+[226] ASSISTANT — 2026-03-28T21:04:01.136Z
+------------------------------------------------------------
+Build passed. Now commit and push:
+
+[227] ASSISTANT — 2026-03-28T21:04:32.076Z
+------------------------------------------------------------
+Todas as correções implementadas e publicadas. Resumo:
+
+**Kanban:**
+- **Ícone de lápis** — aparece ao passar o mouse sobre qualquer card; clique abre o dialog de edição
+- **Cards de Pautas editáveis** — ao editar um card da coluna Pautas, a alteração é salva diretamente no `pautas.yaml`
+- **Zoom corrigido** — ZoomIn/Out agora muda o número de meses exibidos na timeline (zoom in = menos meses, cada um mais largo; zoom out = mais meses), mantendo sempre a mesma largura total
+- **Mover de Pautas → outra coluna** — o item é removido do módulo Pautas e promovido a KanbanCard persistente
+- **Novo card na coluna Pautas** — botão "+" adicionado ao cabeçalho; ao criar, o item é salvo em `pautas.yaml` e aparece automaticamente no módulo Pautas
+- **Efemérides na timeline** — eventos do módulo Efemérides aparecem como chips roxos (📅) na linha do tempo do Kanban
+
+**Efemérides:**
+- **Inserção automática no Google Calendar** — ao salvar um novo evento com a integração OAuth ativa, ele é criado automaticamente no Google Calendar via API (sem precisar clicar no link manualmente). Para eventos existentes, o link "Adicionar ao Google Calendar" continua disponível no dialog de edição
+
+> **Nota sobre Google Calendar:** a integração é opcional e requer um Client ID OAuth configurado. O escopo foi atualizado de `readonly` para `events` (leitura + escrita). Usuários que já tinham o OAuth configurado precisarão reconectar para autorizar a nova permissão de escrita.
+
+[228] USER — 2026-03-28T21:04:32.162Z
+------------------------------------------------------------
+Stop hook feedback:
+Code was edited but no dev server is running. If the change is observable in a browser preview (per <when_to_verify>), call preview_start and follow <verification_workflow>. Otherwise skip.
+
+[229] ASSISTANT — 2026-03-28T21:04:58.292Z
+------------------------------------------------------------
+Kanban está funcionando corretamente. Posso ver:
+
+- **Timeline** mostrando os eventos do Efemérides com o ícone 📅 (Tiradentes, Reunião Editorial Mensal, Dia do Trabalho, Dia das Mães)
+- **Cards do Kanban** com os chips coloridos de datas
+- Layout geral preservado com timeline e board alinhados
+
+[230] USER — 2026-03-28T21:12:44.853Z
+------------------------------------------------------------
+No Quadro de Avisos, as setinhas de Baixa Iminência e Alta Iminência devem ser corrigidas. Baixa Iminência está com uma seta para baixo e deveria ser uma seta para a esquerda. Alta Iminência está com uma seta para baixo também e deveria ser uma seta para a direita
+
+Retire o subtítulo "Matriz Eisenhower -" e mantenha apenas "Organize por Iminência e Empenho". Na tela de login, altere o subtítulo de xoxoLAB para "Gestão editorial colaborativa"
+
+[231] ASSISTANT — 2026-03-28T21:13:35.109Z
+------------------------------------------------------------
+Now I have the full picture. Three fixes needed:
+
+[232] ASSISTANT — 2026-03-28T21:13:45.152Z
+------------------------------------------------------------
+All three changes are clear. Let me apply them:
+
+[233] ASSISTANT — 2026-03-28T21:13:57.403Z
+------------------------------------------------------------
+Now fix the left axis label (remove ← from rotated text, place ArrowLeft icon outside rotation):
+
+[234] ASSISTANT — 2026-03-28T21:14:10.582Z
+------------------------------------------------------------
+Now fix the Login subtitle:
+
+[235] ASSISTANT — 2026-03-28T21:14:22.426Z
+------------------------------------------------------------
+Now verify in the preview:
+
+[236] ASSISTANT — 2026-03-28T21:14:34.457Z
+------------------------------------------------------------
+Login subtitle already updated. Now navigate to Avisos:
+
+[237] ASSISTANT — 2026-03-28T21:14:54.640Z
+------------------------------------------------------------
+Login com "Gestão editorial colaborativa" confirmado. Agora vamos ao Quadro de Avisos via demo:
+
+[238] ASSISTANT — 2026-03-28T21:15:20.100Z
+------------------------------------------------------------
+Tudo correto. Confirmado visualmente:
+
+- **Subtítulo** atualizado para "Organize por iminência e empenho" (sem "Matriz Eisenhower")
+- **Baixa Iminência** (esquerda): seta ← acima do rótulo, apontando para a esquerda
+- **Alta Iminência** (direita): seta → abaixo do rótulo, apontando para a direita
+
+Agora commit e push:
+
+[239] ASSISTANT — 2026-03-28T21:15:28.132Z
+------------------------------------------------------------
+Publicado. As três correções estão no ar.
+
+[240] USER — 2026-03-28T21:15:28.165Z
+------------------------------------------------------------
+Stop hook feedback:
+Code was edited while a preview server is running. If the change is observable in the browser preview (per <when_to_verify>), follow <verification_workflow>. Otherwise skip.
+
+[241] ASSISTANT — 2026-03-28T21:15:31.612Z
+------------------------------------------------------------
+The verification was already completed before the commit — the screenshot confirmed all three changes were correct in the preview. No further action needed.
+
+[242] USER — 2026-03-28T21:24:12.165Z
+------------------------------------------------------------
+As setinhas de Alta e Baixa Iminência no módulo Quadro de Avisos devem ficar dentro dos pills
+
+[243] ASSISTANT — 2026-03-28T21:24:31.307Z
+------------------------------------------------------------
+The fix: apply `writingMode` only to the text span, keeping the arrow icon as a sibling in normal orientation — all inside the pill.
+
+[244] ASSISTANT — 2026-03-28T21:24:56.365Z
+------------------------------------------------------------
+As setas estão agora dentro dos pills — ← no pill de Baixa Iminência e → no pill de Alta Iminência. Commit e push:
+
+[245] ASSISTANT — 2026-03-28T21:25:03.522Z
+------------------------------------------------------------
+Publicado.
+
+[246] USER — 2026-03-28T21:25:03.582Z
+------------------------------------------------------------
+Stop hook feedback:
+Code was edited while a preview server is running. If the change is observable in the browser preview (per <when_to_verify>), follow <verification_workflow>. Otherwise skip.
+
+[247] ASSISTANT — 2026-03-28T21:25:07.330Z
+------------------------------------------------------------
+The verification was already done — the screenshot before the commit confirmed the arrows appear correctly inside the pills. No further action needed.
+
+[248] USER — 2026-03-28T21:25:14.787Z
+------------------------------------------------------------
+Atualize o screenshot sobrescrevendo o anterior e faça um novo deploy
+
+[249] ASSISTANT — 2026-03-28T21:26:02.883Z
+------------------------------------------------------------
+Screenshot atualizado com os pills corretos. Agora commit, push e deploy:
+
+[250] ASSISTANT — 2026-03-28T21:27:46.099Z
+------------------------------------------------------------
+Deploy em andamento. Agora respondendo à sua pergunta sobre configurações:
+
+---
+
+## Google Calendar
+
+A integração é opcional e requer um **Client ID OAuth** do Google Cloud. Siga os passos:
+
+1. Acesse [console.cloud.google.com](https://console.cloud.google.com)
+2. Crie um projeto (ou selecione um existente)
+3. Ative a **Google Calendar API** em *APIs e Serviços → Biblioteca*
+4. Em *APIs e Serviços → Credenciais*, clique em **Criar credenciais → ID do cliente OAuth**
+   - Tipo de aplicativo: **Aplicativo da Web**
+   - Em **Origens JavaScript autorizadas**, adicione a URL da sua instância do xoxoLAB (ex: `https://xoxolab.ombudsmanviktor.me`)
+5. Copie o **Client ID** gerado
+6. No xoxoLAB, acesse o módulo **Efemérides** e clique em **Google Calendar**
+7. Cole o Client ID e clique em **Conectar** — uma janela do Google pedirá autorização
+
+A partir daí, o calendário do Google aparece no módulo Efemérides, e **novos eventos criados no xoxoLAB são inseridos automaticamente no Google Calendar**.
+
+> **Atenção:** o token de acesso expira após algumas horas. Ao expirar, o xoxoLAB avisa e basta clicar em Conectar novamente.
+
+---
+
+## Notificações por E-mail (@menções e lembretes)
+
+As notificações usam o **EmailJS** — um serviço gratuito que envia e-mails diretamente do navegador, sem backend.
+
+1. Crie uma conta em [emailjs.com](https://www.emailjs.com) (plano gratuito permite 200 e-mails/mês)
+2. Em **Email Services**, conecte sua conta de e-mail (Gmail, Outlook etc.)
+3. Em **Email Templates**, crie um template com as seguintes variáveis:
+   ```
+   De: {{from_email}}
+   Para: {{to_email}}
+   Assunto: @menção em {{project_name}} — {{module_name}}
+   Corpo: {{excerpt}}
+   ```
+4. Anote os três valores: **Service ID**, **Template ID** e **Public Key** (em *Account → API Keys*)
+5. Na tela de **Login** do xoxoLAB, expanda a seção **Notificações por Email (opcional)** e informe os três valores antes de entrar
+
+A partir daí, sempre que alguém usar `@email` em Avisos, Pautas, Kanban ou Políticas, o usuário mencionado receberá um e-mail automaticamente. Lembretes de Efemérides (7 dias e 1 dia antes) também são enviados quando o app está aberto.
+
+[251] USER — 2026-03-28T21:30:41.533Z
+------------------------------------------------------------
+Na tela de login, o subtítulo deve ser "App de gestão editorial colaborativa · por coLAB-UFF". Gere um novo screenshot da tela de login, sobrescreva o anterior e faça um novo deploy
+
+[252] ASSISTANT — 2026-03-28T21:39:24.438Z
+------------------------------------------------------------
+Subtítulo correto. Agora atualizo o history.log e faço tudo de uma vez:
 
