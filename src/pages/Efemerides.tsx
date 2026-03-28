@@ -104,6 +104,7 @@ export function Efemerides() {
     try { return JSON.parse(localStorage.getItem('xoxolab_ics_batches') ?? '[]') } catch { return [] }
   })
   const [importManageOpen, setImportManageOpen] = useState(false)
+  const [clearAllOpen, setClearAllOpen] = useState(false)
 
   const { data: storedEventos = [] } = useQuery({
     queryKey: ['eventos', projectId],
@@ -259,6 +260,15 @@ export function Efemerides() {
     setIcsBatches(newBatches)
     localStorage.setItem('xoxolab_ics_batches', JSON.stringify(newBatches))
     toast({ title: 'Importação desfeita' })
+  }
+
+  async function handleClearAll() {
+    await saveEventos(projectId, [])
+    queryClient.setQueryData(['eventos', projectId], [])
+    setIcsBatches([])
+    localStorage.removeItem('xoxolab_ics_batches')
+    setClearAllOpen(false)
+    toast({ title: 'Todos os eventos foram removidos' })
   }
 
   function handleConnectGoogle() {
@@ -442,6 +452,12 @@ export function Efemerides() {
             <Upload className="w-4 h-4" />
             Importar .ics
           </Button>
+          {storedEventos.length > 0 && (
+            <Button variant="outline" size="sm" onClick={() => setClearAllOpen(true)} className="text-red-500 border-red-200 hover:bg-red-50" title="Remover todos os eventos">
+              <X className="w-4 h-4" />
+              Limpar tudo
+            </Button>
+          )}
           {icsBatches.length > 0 && (
             <Button variant="outline" size="sm" onClick={() => setImportManageOpen(true)} title="Gerenciar importações ICS">
               <Repeat className="w-4 h-4" />
@@ -722,6 +738,24 @@ export function Efemerides() {
             <Button variant="outline" onClick={() => setGcalDialogOpen(false)}>Cancelar</Button>
             <Button onClick={handleGcalSave} disabled={!gcalClientIdInput.trim()}>
               Conectar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Clear all dialog */}
+      <Dialog open={clearAllOpen} onOpenChange={setClearAllOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Limpar todos os eventos?</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-gray-600">
+            Esta ação removerá permanentemente todos os <strong>{storedEventos.length} evento{storedEventos.length !== 1 ? 's' : ''}</strong> armazenados no módulo Efemérides. Não é possível desfazer depois de confirmado.
+          </p>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setClearAllOpen(false)}>Cancelar</Button>
+            <Button variant="destructive" onClick={handleClearAll}>
+              Remover todos
             </Button>
           </DialogFooter>
         </DialogContent>
