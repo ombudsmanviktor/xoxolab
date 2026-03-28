@@ -181,6 +181,7 @@ export interface SenhaRow {
   password: string
   notes?: string
   platformId?: string
+  customPlatform?: string
   order: number
   children?: SenhaRow[]
 }

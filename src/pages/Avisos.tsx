@@ -291,8 +291,8 @@ export function Avisos() {
     const el = document.getElementById('avisos-matrix')
     if (!el) return
     try {
-      const { toPng } = await import('html-to-image')
-      const dataUrl = await toPng(el, { pixelRatio: 2, backgroundColor: '#f8f7ff' })
+      const { captureToPng } = await import('@/lib/captureUtils')
+      const dataUrl = await captureToPng(el as HTMLElement, '#f8f7ff')
       const link = document.createElement('a')
       link.download = 'avisos.png'
       link.href = dataUrl
@@ -306,9 +306,9 @@ export function Avisos() {
     const el = document.getElementById('avisos-matrix')
     if (!el) return
     try {
-      const { toPng } = await import('html-to-image')
+      const { captureToPng } = await import('@/lib/captureUtils')
       const { jsPDF } = await import('jspdf')
-      const imgData = await toPng(el, { pixelRatio: 2, backgroundColor: '#ffffff' })
+      const imgData = await captureToPng(el as HTMLElement, '#ffffff')
       const img = new Image()
       img.src = imgData
       await new Promise(r => { img.onload = r })

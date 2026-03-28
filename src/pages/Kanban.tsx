@@ -571,8 +571,8 @@ export function Kanban() {
     const el = boardRef.current
     if (!el) return
     try {
-      const { toPng } = await import('html-to-image')
-      const dataUrl = await toPng(el, { pixelRatio: 2, backgroundColor: '#f9fafb' })
+      const { captureToPng } = await import('@/lib/captureUtils')
+      const dataUrl = await captureToPng(el, '#f9fafb')
       const link = document.createElement('a')
       link.download = 'kanban-board.png'
       link.href = dataUrl
@@ -586,9 +586,9 @@ export function Kanban() {
     const el = boardRef.current
     if (!el) return
     try {
-      const { toPng } = await import('html-to-image')
+      const { captureToPng } = await import('@/lib/captureUtils')
       const { jsPDF } = await import('jspdf')
-      const imgData = await toPng(el, { pixelRatio: 2, backgroundColor: '#ffffff' })
+      const imgData = await captureToPng(el, '#ffffff')
       const img = new Image()
       img.src = imgData
       await new Promise(r => { img.onload = r })

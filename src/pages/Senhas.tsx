@@ -29,6 +29,7 @@ export function Senhas() {
   const [sPassword, setSPassword] = useState('')
   const [sNotes, setSNotes] = useState('')
   const [sPlatformId, setSPlatformId] = useState('none')
+  const [sCustomPlatform, setSCustomPlatform] = useState('')
   const [saving, setSaving] = useState(false)
   const [visiblePasswords, setVisiblePasswords] = useState<Set<string>>(new Set())
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set())
@@ -48,13 +49,14 @@ export function Senhas() {
 
   function openNew(parent?: SenhaRow) {
     setEditSenha(null); setParentId(parent?.id)
-    setSService(''); setSUrl(''); setSLogin(''); setSPassword(''); setSNotes(''); setSPlatformId('none')
+    setSService(''); setSUrl(''); setSLogin(''); setSPassword(''); setSNotes(''); setSPlatformId('none'); setSCustomPlatform('')
     setDialogOpen(true)
   }
 
   function openEdit(s: SenhaRow) {
     setEditSenha(s); setParentId(undefined)
-    setSService(s.service); setSUrl(s.url ?? ''); setSLogin(s.login); setSPassword(s.password); setSNotes(s.notes ?? ''); setSPlatformId(s.platformId ?? 'none')
+    setSService(s.service); setSUrl(s.url ?? ''); setSLogin(s.login); setSPassword(s.password); setSNotes(s.notes ?? '')
+    setSPlatformId(s.platformId ?? 'none'); setSCustomPlatform(s.customPlatform ?? '')
     setDialogOpen(true)
   }
 
@@ -63,8 +65,8 @@ export function Senhas() {
     setSaving(true)
     try {
       const row: SenhaRow = editSenha
-        ? { ...editSenha, service: sService.trim(), url: sUrl || undefined, login: sLogin.trim(), password: sPassword, notes: sNotes || undefined, platformId: sPlatformId !== 'none' ? sPlatformId : undefined }
-        : { id: generateId(), service: sService.trim(), url: sUrl || undefined, login: sLogin.trim(), password: sPassword, notes: sNotes || undefined, platformId: sPlatformId !== 'none' ? sPlatformId : undefined, order: senhas.length }
+        ? { ...editSenha, service: sService.trim(), url: sUrl || undefined, login: sLogin.trim(), password: sPassword, notes: sNotes || undefined, platformId: sPlatformId !== 'none' ? sPlatformId : undefined, customPlatform: sPlatformId === 'outra' ? sCustomPlatform.trim() || undefined : undefined }
+        : { id: generateId(), service: sService.trim(), url: sUrl || undefined, login: sLogin.trim(), password: sPassword, notes: sNotes || undefined, platformId: sPlatformId !== 'none' ? sPlatformId : undefined, customPlatform: sPlatformId === 'outra' ? sCustomPlatform.trim() || undefined : undefined, order: senhas.length }
 
       let newRows: SenhaRow[]
       if (editSenha) {
@@ -112,7 +114,8 @@ export function Senhas() {
   }
 
   function renderRow(row: SenhaRow, depth = 0) {
-    const platform = getPlatform(row.platformId ?? '')
+    const platform = row.platformId === 'outra' ? null : getPlatform(row.platformId ?? '')
+    const customLabel = row.platformId === 'outra' ? (row.customPlatform || 'Outra') : null
     const isExpanded = expandedRows.has(row.id)
     const hasChildren = (row.children?.length ?? 0) > 0
     const showPass = visiblePasswords.has(row.id)
@@ -135,7 +138,12 @@ export function Senhas() {
 
           {/* Platform icon */}
           <div className={cn('w-6 h-6 rounded flex items-center justify-center text-[10px] font-bold flex-shrink-0', platform?.bgColor ?? 'bg-gray-100', platform?.textColor ?? 'text-gray-500')}>
-            {platform ? platform.label.slice(0, 2).toUpperCase() : <KeyRound className="w-3 h-3" />}
+            {platform
+              ? platform.label.slice(0, 2).toUpperCase()
+              : customLabel
+                ? customLabel.slice(0, 2).toUpperCase()
+                : <KeyRound className="w-3 h-3" />
+            }
           </div>
 
           {/* Service + URL */}
@@ -225,13 +233,22 @@ export function Senhas() {
             </div>
             <div className="space-y-1.5">
               <Label>Plataforma (opcional)</Label>
-              <Select value={sPlatformId} onValueChange={setSPlatformId}>
+              <Select value={sPlatformId} onValueChange={v => { setSPlatformId(v); if (v !== 'outra') setSCustomPlatform('') }}>
                 <SelectTrigger><SelectValue placeholder="Selecione…" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="none">Nenhuma</SelectItem>
                   {PLATFORMS.map(p => <SelectItem key={p.id} value={p.id}>{p.label}</SelectItem>)}
+                  <SelectItem value="outra">Outra…</SelectItem>
                 </SelectContent>
               </Select>
+              {sPlatformId === 'outra' && (
+                <Input
+                  placeholder="Nome da plataforma"
+                  value={sCustomPlatform}
+                  onChange={e => setSCustomPlatform(e.target.value)}
+                  autoFocus
+                />
+              )}
             </div>
             <div className="space-y-1.5">
               <Label>URL (opcional)</Label>

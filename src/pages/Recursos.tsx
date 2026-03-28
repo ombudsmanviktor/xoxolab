@@ -3,6 +3,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Plus, Link2, Upload, Download, Trash2, ExternalLink, X, File } from 'lucide-react'
 import { useProject } from '@/contexts/ProjectContext'
 import { loadRecursos, saveRecursos, uploadTemplate } from '@/lib/storage'
+import { readFile, getGitHubConfig } from '@/lib/github'
 import { generateId, todayISO } from '@/lib/utils'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
@@ -112,6 +113,28 @@ export function Recursos() {
     await saveData({ ...data, templates: data.templates.filter(t => t.id !== id) })
   }
 
+  async function handleDownloadTemplate(path: string, name: string, type: string) {
+    try {
+      const cfg = getGitHubConfig()
+      if (!cfg) { toast({ title: 'Não autenticado', variant: 'destructive' }); return }
+      const ghFile = await readFile(cfg, path)
+      // Decode base64 → binary bytes (works for any file type)
+      const raw = ghFile.content.replace(/\n/g, '')
+      const binary = atob(raw)
+      const bytes = new Uint8Array(binary.length)
+      for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i)
+      const blob = new Blob([bytes], { type: type || 'application/octet-stream' })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = name
+      a.click()
+      URL.revokeObjectURL(url)
+    } catch (err) {
+      toast({ title: 'Erro ao baixar arquivo', description: String(err), variant: 'destructive' })
+    }
+  }
+
   function formatSize(bytes: number) {
     if (bytes < 1024) return `${bytes} B`
     if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
@@ -192,10 +215,10 @@ export function Recursos() {
                     <p className="text-xs text-gray-400">{formatSize(t.size)}</p>
                   </div>
                   <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                    {t.url && (
-                      <a href={t.url} download={t.name} className="p-1 text-gray-400 hover:text-gray-600">
+                    {t.path && (
+                      <button onClick={() => handleDownloadTemplate(t.path, t.name, t.type)} className="p-1 text-gray-400 hover:text-gray-600" title="Baixar">
                         <Download className="w-3.5 h-3.5" />
-                      </a>
+                      </button>
                     )}
                     <button onClick={() => handleDeleteTemplate(t.id)} className="p-1 text-gray-300 hover:text-red-400">
                       <Trash2 className="w-3.5 h-3.5" />
