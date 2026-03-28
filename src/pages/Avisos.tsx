@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect, useRef } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { DragDropContext, Droppable, Draggable, type DropResult } from '@hello-pangea/dnd'
-import { Plus, Download, CheckCircle2, ChevronDown, ChevronUp, X, ArrowUp, ArrowDown } from 'lucide-react'
+import { Plus, Download, CheckCircle2, ChevronDown, ChevronUp, X, ArrowUp, ArrowDown, ArrowLeft, ArrowRight } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 import { useProject } from '@/contexts/ProjectContext'
 import { loadAvisos, saveAviso, deleteAviso } from '@/lib/storage'
@@ -388,7 +388,7 @@ export function Avisos() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-xl font-bold text-gray-900">Quadro de Avisos</h1>
-          <p className="text-sm text-gray-500 mt-0.5">Matriz Eisenhower — organize por iminência e empenho</p>
+          <p className="text-sm text-gray-500 mt-0.5">Organize por iminência e empenho</p>
         </div>
         <div className="flex items-center gap-2">
           {/* Export dropdown */}
@@ -436,12 +436,13 @@ export function Avisos() {
 
           <div className="flex items-stretch gap-3">
             {/* Left axis label: Baixa Iminência */}
-            <div className="flex items-center justify-center flex-shrink-0 select-none">
+            <div className="flex flex-col items-center justify-center flex-shrink-0 select-none gap-1.5">
+              <ArrowLeft className="w-3.5 h-3.5 text-amber-700" />
               <div
                 className="bg-amber-100 text-amber-800 text-xs font-bold px-3 py-1.5 rounded-full"
                 style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)' }}
               >
-                ← Baixa Iminência
+                Baixa Iminência
               </div>
             </div>
 
@@ -492,13 +493,14 @@ export function Avisos() {
             </div>
 
             {/* Right axis label: Alta Iminência */}
-            <div className="flex items-center justify-center flex-shrink-0 select-none">
+            <div className="flex flex-col items-center justify-center flex-shrink-0 select-none gap-1.5">
               <div
                 className="bg-amber-100 text-amber-800 text-xs font-bold px-3 py-1.5 rounded-full"
                 style={{ writingMode: 'vertical-rl' }}
               >
-                Alta Iminência →
+                Alta Iminência
               </div>
+              <ArrowRight className="w-3.5 h-3.5 text-amber-700" />
             </div>
           </div>
 

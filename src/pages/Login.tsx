@@ -104,7 +104,7 @@ export function Login() {
             </svg>
           </div>
           <h1 className="text-2xl font-bold text-gray-900">xoxoLAB</h1>
-          <p className="text-gray-500 text-sm mt-1">Gestão colaborativa de mídias sociais</p>
+          <p className="text-gray-500 text-sm mt-1">Gestão editorial colaborativa</p>
         </div>
 
         {/* Form */}
