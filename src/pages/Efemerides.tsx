@@ -10,7 +10,7 @@ import { useProject } from '@/contexts/ProjectContext'
 import { loadEventos, saveEventos, loadPautas, loadKanbanCards } from '@/lib/storage'
 import { generateId, formatDate, todayISO } from '@/lib/utils'
 import {
-  requestGoogleToken, revokeGoogleToken, fetchGCalEvents,
+  requestGoogleToken, revokeGoogleToken, fetchGCalEvents, createGCalEvent,
   parseICSFile, getSavedClientId, saveClientId,
   type GCalEvent,
 } from '@/lib/googleCalendar'
@@ -272,6 +272,23 @@ export function Efemerides() {
       queryClient.setQueryData(['eventos', projectId], newEventos)
       setDialogOpen(false)
       toast({ title: editEvento ? 'Evento atualizado' : 'Evento criado' })
+
+      // Auto-insert into Google Calendar if connected and creating a new event
+      if (!editEvento && gcalToken) {
+        const freqMap: Record<string, string> = { weekly: 'WEEKLY', monthly: 'MONTHLY', yearly: 'YEARLY' }
+        createGCalEvent(gcalToken, {
+          title: evTitle.trim(),
+          date: evDate,
+          endDate: evEndDate || undefined,
+          description: evDesc || undefined,
+          recurrence: evRecurrence !== 'none' ? freqMap[evRecurrence] : undefined,
+        }).then(() => {
+          toast({ title: 'Evento adicionado ao Google Calendar' })
+        }).catch(err => {
+          if (String(err).includes('TOKEN_EXPIRED')) setGcalToken(null)
+          toast({ title: 'Erro ao sincronizar com Google Calendar', description: String(err), variant: 'destructive' })
+        })
+      }
     } catch (err) {
       toast({ title: 'Erro', description: String(err), variant: 'destructive' })
     }

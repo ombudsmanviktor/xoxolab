@@ -1,7 +1,7 @@
 // Google Calendar OAuth (GIS token client) + REST API helpers
 // Requires: Google Cloud project with Calendar API enabled + OAuth Web Client ID
 
-const CAL_SCOPE = 'https://www.googleapis.com/auth/calendar.events.readonly'
+const CAL_SCOPE = 'https://www.googleapis.com/auth/calendar.events'
 const CAL_API = 'https://www.googleapis.com/calendar/v3'
 const LS_CLIENT_ID = 'xoxolab_gcal_client_id'
 
@@ -98,6 +98,29 @@ export async function fetchGCalEvents(
   }
   const data = await res.json()
   return data.items ?? []
+}
+
+export async function createGCalEvent(
+  token: string,
+  event: { title: string; date: string; endDate?: string; description?: string; recurrence?: string },
+): Promise<void> {
+  const end = event.endDate ?? event.date
+  const body = {
+    summary: event.title,
+    description: event.description ?? '',
+    start: { date: event.date },
+    end: { date: end },
+    ...(event.recurrence ? { recurrence: [`RRULE:FREQ=${event.recurrence}`] } : {}),
+  }
+  const res = await fetch(`${CAL_API}/calendars/primary/events`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  })
+  if (!res.ok) {
+    if (res.status === 401) throw new Error('TOKEN_EXPIRED')
+    throw new Error(`Google Calendar API: ${res.status}`)
+  }
 }
 
 export function icsDateToISO(d: string): string {

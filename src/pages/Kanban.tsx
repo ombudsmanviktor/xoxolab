@@ -4,13 +4,13 @@ import { DragDropContext, Droppable, Draggable, type DropResult } from '@hello-p
 import {
   Plus, ChevronRight, ChevronLeft, ZoomIn, ZoomOut,
   History, ExternalLink, X, Download, Share2, User,
-  Calendar, ChevronDown, ChevronUp,
+  Calendar, ChevronDown, ChevronUp, Pencil,
 } from 'lucide-react'
 import { format, eachMonthOfInterval, startOfMonth, endOfMonth, addMonths, subMonths, parseISO, isValid } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import { useAuth } from '@/contexts/AuthContext'
 import { useProject } from '@/contexts/ProjectContext'
-import { loadKanbanCards, saveKanbanCard, deleteKanbanCard, loadPautas } from '@/lib/storage'
+import { loadKanbanCards, saveKanbanCard, deleteKanbanCard, loadPautas, savePautas, loadEventos } from '@/lib/storage'
 import { sendMentionNotification } from '@/lib/emailjs'
 import { extractMentions, generateId, formatDate, formatDateTime, todayISO } from '@/lib/utils'
 import { getPlatform, PLATFORMS, getPlatformBorderColor } from '@/lib/platforms'
@@ -24,7 +24,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useToast } from '@/hooks/useToast'
 import { ToastContainer } from '@/components/ui/toast'
 import { cn } from '@/lib/utils'
-import type { KanbanCard, KanbanColumn, KanbanPriority, KanbanLogEntry, PautaItem } from '@/types'
+import type { KanbanCard, KanbanColumn, KanbanPriority, KanbanLogEntry, PautaItem, Evento } from '@/types'
 
 const COLUMNS: { id: KanbanColumn; label: string; color: string; collapsedByDefault: boolean }[] = [
   { id: 'pautas',               label: 'Pautas',               color: 'bg-gray-100 border-gray-200',    collapsedByDefault: true },
@@ -64,15 +64,25 @@ function pautaToKanbanCard(item: PautaItem): KanbanCard {
 
 // ─── Timeline ─────────────────────────────────────────────────────────────
 
-function KanbanTimeline({ cards, totalWidth }: { cards: KanbanCard[]; totalWidth: number }) {
+function KanbanTimeline({
+  cards, eventos, totalWidth, monthCount,
+}: {
+  cards: KanbanCard[]
+  eventos: Evento[]
+  totalWidth: number
+  monthCount: number
+}) {
   const today = new Date()
   const cardsWithDates = cards.filter(c => c.dueDate && isValid(parseISO(c.dueDate)))
+  const eventosWithDates = eventos.filter(e => e.date && isValid(parseISO(e.date)))
 
-  const rangeStart = subMonths(startOfMonth(today), 1)
-  const rangeEnd = addMonths(endOfMonth(today), 4)  // always 6 months: 1 before + current + 4 after
+  // monthCount total: 1 before + rest after
+  const beforeMonths = 1
+  const afterMonths = monthCount - beforeMonths - 1
+  const rangeStart = subMonths(startOfMonth(today), beforeMonths)
+  const rangeEnd = addMonths(endOfMonth(today), afterMonths)
   const months = eachMonthOfInterval({ start: rangeStart, end: rangeEnd })
 
-  // Distribute column widths evenly so the timeline always fills totalWidth exactly
   const colWidth = Math.round(totalWidth / months.length)
 
   return (
@@ -80,6 +90,7 @@ function KanbanTimeline({ cards, totalWidth }: { cards: KanbanCard[]; totalWidth
       {months.map(month => {
         const monthStr = format(month, 'yyyy-MM')
         const monthCards = cardsWithDates.filter(c => c.dueDate!.startsWith(monthStr))
+        const monthEventos = eventosWithDates.filter(e => e.date.startsWith(monthStr))
         return (
           <div
             key={monthStr}
@@ -108,6 +119,16 @@ function KanbanTimeline({ cards, totalWidth }: { cards: KanbanCard[]; totalWidth
                   </div>
                 )
               })}
+              {monthEventos.map(e => (
+                <div
+                  key={e.id}
+                  title={`Efeméride: ${e.title} — ${e.date}`}
+                  className="text-[10px] font-medium px-1.5 py-0.5 rounded border truncate max-w-full bg-purple-50 text-purple-700 border-purple-200"
+                  style={{ maxWidth: colWidth - 16 }}
+                >
+                  📅 {e.title}
+                </div>
+              ))}
             </div>
           </div>
         )
@@ -137,13 +158,21 @@ function KanbanCardView({
   return (
     <div
       className={cn(
-        'bg-white rounded-lg border border-gray-100 border-l-4 p-3 shadow-sm hover:shadow-md transition-shadow cursor-pointer',
+        'group bg-white rounded-lg border border-gray-100 border-l-4 p-3 shadow-sm hover:shadow-md transition-shadow',
         borderColorClass,
         isFromPautas && 'opacity-75'
       )}
-      onClick={onEdit}
     >
-      <p className="font-semibold text-gray-900 text-sm leading-snug mb-1">{card.title}</p>
+      <div className="flex items-start gap-1">
+        <p className="font-semibold text-gray-900 text-sm leading-snug mb-1 flex-1">{card.title}</p>
+        <button
+          onClick={e => { e.stopPropagation(); onEdit() }}
+          className="opacity-0 group-hover:opacity-100 transition-opacity p-0.5 text-gray-400 hover:text-purple-600 flex-shrink-0"
+          title="Editar card"
+        >
+          <Pencil className="w-3.5 h-3.5" />
+        </button>
+      </div>
       {card.description && (
         <p className="text-xs text-gray-500 line-clamp-2 mb-2">{card.description.slice(0, 100)}</p>
       )}
@@ -250,6 +279,11 @@ export function Kanban() {
     queryFn: () => loadPautas(projectId),
   })
 
+  const { data: eventos = [] } = useQuery({
+    queryKey: ['eventos', projectId],
+    queryFn: () => loadEventos(projectId),
+  })
+
   const pautasCards = useMemo(() => (pautaData?.items ?? []).map(pautaToKanbanCard), [pautaData])
 
   const allCards = useMemo(() => {
@@ -282,13 +316,12 @@ export function Kanban() {
 
   function openNew(column: KanbanColumn = 'em-construcao') {
     setEditCard(null)
-    setEditColumn(column)
+    setEditColumn(column === 'finalizado' ? 'em-construcao' : column)
     setCardTitle(''); setCardDesc(''); setCardPriority(''); setCardPlatforms([]); setCardAssignee(''); setCardDueDate(''); setCardCustomPlatform('')
     setDialogOpen(true)
   }
 
   function openEdit(card: KanbanCard) {
-    if (card.pautaId) return // pautas cards are read-only
     setEditCard(card)
     setEditColumn(card.column)
     setCardTitle(card.title)
@@ -319,6 +352,22 @@ export function Kanban() {
 
       let card: KanbanCard
       if (editCard) {
+        // If editing a pautas-derived card → update the PautaItem in storage
+        if (editCard.pautaId) {
+          const currentPautas = pautaData ?? { sections: [], items: [], tags: [] }
+          const updatedItems = currentPautas.items.map(item =>
+            item.id === editCard.pautaId
+              ? { ...item, title: cardTitle.trim(), body: cardDesc || undefined, dueDate: cardDueDate || undefined, mentions: newMentions, updatedAt: now }
+              : item
+          )
+          const updatedPautas = { ...currentPautas, items: updatedItems }
+          await savePautas(projectId, updatedPautas)
+          queryClient.setQueryData(['pautas', projectId], updatedPautas)
+          setDialogOpen(false)
+          toast({ title: 'Item de Pautas atualizado' })
+          setSaving(false)
+          return
+        }
         card = appendLog(
           {
             ...editCard,
@@ -340,6 +389,31 @@ export function Kanban() {
         )
       } else {
         const existingInCol = cardsByColumn.get(editColumn) ?? []
+        const newId = generateId()
+        // If creating in pautas column → also persist as a PautaItem
+        if (editColumn === 'pautas') {
+          const currentPautas = pautaData ?? { sections: [], items: [], tags: [] }
+          const pautaItem: PautaItem = {
+            id: newId,
+            title: cardTitle.trim(),
+            body: cardDesc || undefined,
+            order: currentPautas.items.length,
+            tags: [],
+            attachments: [],
+            dueDate: cardDueDate || undefined,
+            mentions: extractMentions(cardDesc),
+            createdAt: now,
+            updatedAt: now,
+          }
+          const updatedPautas = { ...currentPautas, items: [...currentPautas.items, pautaItem] }
+          await savePautas(projectId, updatedPautas)
+          queryClient.setQueryData(['pautas', projectId], updatedPautas)
+          // The pauta item will automatically appear in kanban via pautasCards — no need to save a KanbanCard
+          setDialogOpen(false)
+          toast({ title: 'Item criado em Pautas' })
+          setSaving(false)
+          return
+        }
         card = appendLog(
           {
             id: generateId(),
@@ -397,7 +471,7 @@ export function Kanban() {
     const srcCol = source.droppableId as KanbanColumn
     const dstCol = destination.droppableId as KanbanColumn
 
-    // If dragging from pautas column → promote to a real kanban card
+    // If dragging from pautas column → promote to a real kanban card AND remove from Pautas
     if (srcCol === 'pautas') {
       const pautaCard = pautasCards.find(c => c.id === draggableId)
       if (!pautaCard) return
@@ -408,7 +482,7 @@ export function Kanban() {
           id: generateId(),
           column: dstCol,
           order: destination.index,
-          pautaId: pautaCard.pautaId,
+          pautaId: undefined, // promoted: no longer linked to pauta
           createdAt: now,
           updatedAt: now,
         },
@@ -417,6 +491,13 @@ export function Kanban() {
       )
       await saveKanbanCard(projectId, newCard)
       queryClient.setQueryData(['kanban', projectId], (prev: KanbanCard[] = []) => [...prev, newCard])
+
+      // Remove corresponding PautaItem from Pautas storage
+      if (pautaCard.pautaId && pautaData) {
+        const updatedPautas = { ...pautaData, items: pautaData.items.filter(i => i.id !== pautaCard.pautaId) }
+        await savePautas(projectId, updatedPautas)
+        queryClient.setQueryData(['pautas', projectId], updatedPautas)
+      }
       return
     }
 
@@ -592,6 +673,10 @@ export function Kanban() {
   const boardWidth = COLUMNS.reduce((sum, col) => sum + (collapsed.has(col.id) ? 40 : COLUMN_WIDTH), 0)
   const totalWidth = boardWidth
 
+  // Zoom controls the number of months shown in the timeline (same total width)
+  // zoom=1 → 6 months, zoom-out → more months, zoom-in → fewer months
+  const monthCount = Math.max(2, Math.round(6 / zoom))
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -643,7 +728,7 @@ export function Kanban() {
       {/* Board wrapper (timeline + columns scroll together) */}
       <div className="overflow-x-auto rounded-xl border border-gray-200" ref={boardRef}>
         {/* Timeline */}
-        <KanbanTimeline cards={[...allCards, ...pautasCards]} totalWidth={totalWidth} />
+        <KanbanTimeline cards={[...allCards, ...pautasCards]} eventos={eventos} totalWidth={totalWidth} monthCount={monthCount} />
 
         {/* Divider between timeline and board */}
         <div className="border-t-4 border-gray-200 bg-gray-100 px-4 py-1.5 flex items-center gap-2">
@@ -686,7 +771,7 @@ export function Kanban() {
                         </button>
                         <span className="font-semibold text-sm text-gray-700 flex-1">{col.label}</span>
                         <Badge variant="secondary" className="text-[10px] px-1.5">{cards.length}</Badge>
-                        {col.id !== 'pautas' && (
+                        {col.id !== 'finalizado' && (
                           <button
                             onClick={() => openNew(col.id)}
                             className="text-gray-400 hover:text-purple-600 transition-colors"
@@ -761,7 +846,7 @@ export function Kanban() {
                 <Select value={editColumn} onValueChange={v => setEditColumn(v as KanbanColumn)}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    {COLUMNS.filter(c => c.id !== 'pautas').map(c => (
+                    {COLUMNS.filter(c => c.id !== 'finalizado').map(c => (
                       <SelectItem key={c.id} value={c.id}>{c.label}</SelectItem>
                     ))}
                   </SelectContent>
