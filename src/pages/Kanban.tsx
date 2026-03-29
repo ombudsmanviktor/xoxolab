@@ -760,10 +760,18 @@ export function Kanban() {
     const card = allCards.find(c => c.id === draggableId)
     if (!card) return
 
+    // If moving out of publicacao, clear scheduledAt so the card can be re-scheduled
+    const clearSchedule = srcCol === 'publicacao' && dstCol !== 'publicacao'
+
     const moved = appendLog(
-      { ...card, column: dstCol, order: destination.index },
+      {
+        ...card,
+        column: dstCol,
+        order: destination.index,
+        scheduledAt: clearSchedule ? undefined : card.scheduledAt,
+      },
       srcCol !== dstCol
-        ? `Movido para ${COLUMNS.find(c => c.id === dstCol)?.label ?? dstCol}`
+        ? `Movido para ${COLUMNS.find(c => c.id === dstCol)?.label ?? dstCol}${clearSchedule ? ' (agendamento reiniciado)' : ''}`
         : 'Reordenado',
       session!.email
     )
@@ -1056,7 +1064,7 @@ export function Kanban() {
                                 key={card.id}
                                 draggableId={card.id}
                                 index={i}
-                                isDragDisabled={col.id === 'publicacao'}
+                                isDragDisabled={false}
                               >
                                 {(provided, snapshot) => (
                                   <div
