@@ -8,8 +8,7 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "predeploy": "npm run build",
-    "deploy": "gh-pages -d dist"
+    "deploy": "npm run build && git add -A && git diff --cached --quiet || git commit -m 'chore: deploy build' && git push origin main"
   },
   "dependencies": {
     "@emailjs/browser": "^4.4.1",
