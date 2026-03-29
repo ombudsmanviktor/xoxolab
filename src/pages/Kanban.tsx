@@ -4,13 +4,14 @@ import { DragDropContext, Droppable, Draggable, type DropResult } from '@hello-p
 import {
   Plus, ChevronRight, ChevronLeft, ZoomIn, ZoomOut,
   History, ExternalLink, X, Download, Share2, User,
-  Calendar, ChevronDown, ChevronUp, Pencil,
+  Calendar, ChevronDown, ChevronUp, Pencil, Paperclip, ImagePlus, Trash2,
 } from 'lucide-react'
 import { format, eachMonthOfInterval, startOfMonth, endOfMonth, addMonths, subMonths, parseISO, isValid } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import { useAuth } from '@/contexts/AuthContext'
 import { useProject } from '@/contexts/ProjectContext'
-import { loadKanbanCards, saveKanbanCard, deleteKanbanCard, loadPautas, savePautas, loadEventos } from '@/lib/storage'
+import { loadKanbanCards, saveKanbanCard, deleteKanbanCard, loadPautas, savePautas, loadEventos, uploadKanbanAttachment } from '@/lib/storage'
+import { readFile, getGitHubConfig } from '@/lib/github'
 import { sendMentionNotification } from '@/lib/emailjs'
 import { extractMentions, generateId, formatDate, formatDateTime, todayISO } from '@/lib/utils'
 import { getPlatform, PLATFORMS, getPlatformBorderColor } from '@/lib/platforms'
@@ -24,7 +25,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useToast } from '@/hooks/useToast'
 import { ToastContainer } from '@/components/ui/toast'
 import { cn } from '@/lib/utils'
-import type { KanbanCard, KanbanColumn, KanbanPriority, KanbanLogEntry, PautaItem, Evento } from '@/types'
+import type { KanbanCard, KanbanColumn, KanbanPriority, KanbanLogEntry, PautaItem, Evento, Attachment } from '@/types'
 
 const COLUMNS: { id: KanbanColumn; label: string; color: string; collapsedByDefault: boolean }[] = [
   { id: 'pautas',               label: 'Pautas',               color: 'bg-gray-100 border-gray-200',    collapsedByDefault: true },
@@ -142,18 +143,37 @@ function KanbanTimeline({
 function KanbanCardView({
   card,
   onEdit,
+  onQuickAttach,
+  onDownloadCard,
   isFromPautas = false,
 }: {
   card: KanbanCard
   onEdit: () => void
+  onQuickAttach: (files: FileList) => void
+  onDownloadCard: (fmt: 'md' | 'docx' | 'zip') => void
   isFromPautas?: boolean
 }) {
   const [showLog, setShowLog] = useState(false)
+  const [isDragOver, setIsDragOver] = useState(false)
+  const [dlOpen, setDlOpen] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const dlRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!dlOpen) return
+    const handler = (e: MouseEvent) => {
+      if (dlRef.current && !dlRef.current.contains(e.target as Node)) setDlOpen(false)
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [dlOpen])
+
   const primaryPlatform = card.platforms[0]
   const borderColorClass = getPlatformBorderColor(primaryPlatform)
   const today = todayISO()
   const isOverdue = card.dueDate && card.dueDate < today
   const isDueSoon = card.dueDate && card.dueDate >= today && card.dueDate <= new Date(Date.now() + 3 * 86400000).toISOString().split('T')[0]
+  const mediaCount = card.attachments?.length ?? 0
 
   return (
     <div
@@ -165,6 +185,33 @@ function KanbanCardView({
     >
       <div className="flex items-start gap-1">
         <p className="font-semibold text-gray-900 text-sm leading-snug mb-1 flex-1">{card.title}</p>
+        {/* Download dropdown */}
+        <div className="relative opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" ref={dlRef}>
+          <button
+            onClick={e => { e.stopPropagation(); setDlOpen(v => !v) }}
+            className="p-0.5 text-gray-400 hover:text-purple-600"
+            title="Baixar card"
+          >
+            <Download className="w-3.5 h-3.5" />
+          </button>
+          {dlOpen && (
+            <div className="absolute right-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50 py-1 min-w-[160px]">
+              {[
+                { label: '📝 Markdown (.md)', fmt: 'md' as const },
+                { label: '📄 Word (.docx)', fmt: 'docx' as const },
+                { label: '📦 ZIP (texto + mídias)', fmt: 'zip' as const },
+              ].map(({ label, fmt }) => (
+                <button
+                  key={fmt}
+                  onClick={e => { e.stopPropagation(); setDlOpen(false); onDownloadCard(fmt) }}
+                  className="w-full px-3 py-1.5 text-xs text-gray-700 hover:bg-gray-50 text-left"
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
         <button
           onClick={e => { e.stopPropagation(); onEdit() }}
           className="opacity-0 group-hover:opacity-100 transition-opacity p-0.5 text-gray-400 hover:text-purple-600 flex-shrink-0"
@@ -202,6 +249,41 @@ function KanbanCardView({
             {formatDate(card.dueDate)}
           </span>
         )}
+        {mediaCount > 0 && (
+          <span className="flex items-center gap-0.5 text-[10px] text-gray-400">
+            <Paperclip className="w-3 h-3" />
+            {mediaCount}
+          </span>
+        )}
+      </div>
+
+      {/* Quick-attach drop zone */}
+      <div
+        className={cn(
+          'mt-2 border border-dashed rounded flex items-center justify-center gap-1 h-8 cursor-pointer transition-colors text-[10px]',
+          isDragOver
+            ? 'border-purple-400 bg-purple-50 text-purple-600'
+            : 'border-gray-200 text-gray-300 hover:border-gray-400 hover:text-gray-400'
+        )}
+        onClick={e => { e.stopPropagation(); fileInputRef.current?.click() }}
+        onDragOver={e => { e.preventDefault(); e.stopPropagation(); setIsDragOver(true) }}
+        onDragLeave={e => { e.stopPropagation(); setIsDragOver(false) }}
+        onDrop={e => {
+          e.preventDefault(); e.stopPropagation(); setIsDragOver(false)
+          if (e.dataTransfer.files.length) onQuickAttach(e.dataTransfer.files)
+        }}
+        title="Clique ou arraste imagens/vídeos"
+      >
+        <ImagePlus className="w-3 h-3" />
+        <span>{isDragOver ? 'Solte aqui' : '+'}</span>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*,video/*"
+          multiple
+          className="hidden"
+          onChange={e => { if (e.target.files?.length) { onQuickAttach(e.target.files); e.target.value = '' } }}
+        />
       </div>
 
       {card.log?.length > 0 && (
@@ -267,7 +349,10 @@ export function Kanban() {
   const [cardAssignee, setCardAssignee] = useState('')
   const [cardDueDate, setCardDueDate] = useState('')
   const [cardCustomPlatform, setCardCustomPlatform] = useState('')
+  const [cardAttachments, setCardAttachments] = useState<Attachment[]>([])
+  const [attachUploading, setAttachUploading] = useState(false)
   const [saving, setSaving] = useState(false)
+  const dialogFileRef = useRef<HTMLInputElement>(null)
 
   const { data: kanbanCards = [] } = useQuery({
     queryKey: ['kanban', projectId],
@@ -318,6 +403,7 @@ export function Kanban() {
     setEditCard(null)
     setEditColumn(column === 'finalizado' ? 'em-construcao' : column)
     setCardTitle(''); setCardDesc(''); setCardPriority(''); setCardPlatforms([]); setCardAssignee(''); setCardDueDate(''); setCardCustomPlatform('')
+    setCardAttachments([])
     setDialogOpen(true)
   }
 
@@ -334,6 +420,7 @@ export function Kanban() {
     setCardCustomPlatform(customPlatforms[0] ?? '')
     setCardAssignee(card.assignee ?? '')
     setCardDueDate(card.dueDate ?? '')
+    setCardAttachments(card.attachments ?? [])
     setDialogOpen(true)
   }
 
@@ -377,6 +464,7 @@ export function Kanban() {
             platforms,
             assignee: cardAssignee || undefined,
             dueDate: cardDueDate || undefined,
+            attachments: cardAttachments,
             mentions: newMentions,
             updatedAt: now,
           },
@@ -425,7 +513,7 @@ export function Kanban() {
             platforms,
             assignee: cardAssignee || undefined,
             dueDate: cardDueDate || undefined,
-            attachments: [],
+            attachments: cardAttachments,
             log: [],
             mentions: newMentions,
             createdAt: now,
@@ -462,6 +550,125 @@ export function Kanban() {
     queryClient.setQueryData(['kanban', projectId], (prev: KanbanCard[] = []) => prev.filter(c => c.id !== editCard.id))
     setDialogOpen(false)
     toast({ title: 'Card removido' })
+  }
+
+  // ─── Attachment helpers ──────────────────────────────────────────────────
+
+  async function uploadFiles(cardId: string, files: FileList): Promise<Attachment[]> {
+    const results: Attachment[] = []
+    for (const file of Array.from(files)) {
+      if (file.size > 50 * 1024 * 1024) {
+        toast({ title: `"${file.name}" muito grande (máx 50 MB)`, variant: 'destructive' })
+        continue
+      }
+      const att = await uploadKanbanAttachment(projectId, cardId, file)
+      results.push(att)
+    }
+    return results
+  }
+
+  /** Upload from dialog (card may not exist yet — use a temp id that becomes the real id after save) */
+  async function handleDialogAttach(files: FileList) {
+    setAttachUploading(true)
+    try {
+      const cardId = editCard?.id ?? generateId()
+      const atts = await uploadFiles(cardId, files)
+      setCardAttachments(prev => [...prev, ...atts])
+    } catch (err) {
+      toast({ title: 'Erro no upload', description: String(err), variant: 'destructive' })
+    }
+    setAttachUploading(false)
+  }
+
+  /** Quick-attach directly from the card tile (card must already exist) */
+  async function handleQuickAttach(card: KanbanCard, files: FileList) {
+    try {
+      const atts = await uploadFiles(card.id, files)
+      if (!atts.length) return
+      const updated = appendLog(
+        { ...card, attachments: [...(card.attachments ?? []), ...atts], updatedAt: new Date().toISOString() },
+        `${atts.length} mídia(s) anexada(s)`,
+        session!.email
+      )
+      await saveKanbanCard(projectId, updated)
+      queryClient.setQueryData(['kanban', projectId], (prev: KanbanCard[] = []) =>
+        prev.map(c => c.id === updated.id ? updated : c)
+      )
+      toast({ title: `${atts.length} arquivo(s) anexado(s)` })
+    } catch (err) {
+      toast({ title: 'Erro ao anexar', description: String(err), variant: 'destructive' })
+    }
+  }
+
+  // ─── Per-card export ──────────────────────────────────────────────────────
+
+  function cardToMarkdown(card: KanbanCard): string {
+    return `# ${card.title}\n\n${card.description}`
+  }
+
+  async function exportCardMd(card: KanbanCard) {
+    const blob = new Blob([cardToMarkdown(card)], { type: 'text/markdown' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a'); a.href = url; a.download = `${card.id}.md`; a.click()
+    URL.revokeObjectURL(url)
+  }
+
+  async function exportCardDocx(card: KanbanCard) {
+    try {
+      const { Document, Paragraph, TextRun, HeadingLevel, Packer } = await import('docx')
+      const doc = new Document({
+        sections: [{
+          children: [
+            new Paragraph({ text: card.title, heading: HeadingLevel.HEADING_1 }),
+            ...card.description.split('\n').map(line =>
+              new Paragraph({ children: [new TextRun(line)] })
+            ),
+          ],
+        }],
+      })
+      const blob = await Packer.toBlob(doc)
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a'); a.href = url; a.download = `${card.id}.docx`; a.click()
+      URL.revokeObjectURL(url)
+    } catch (err) {
+      toast({ title: 'Erro ao exportar DOCX', description: String(err), variant: 'destructive' })
+    }
+  }
+
+  async function exportCardZip(card: KanbanCard) {
+    try {
+      const JSZip = (await import('jszip')).default
+      const zip = new JSZip()
+      zip.file(`${card.id}.md`, cardToMarkdown(card))
+
+      // Fetch each attachment from GitHub and add to ZIP
+      const cfg = getGitHubConfig()
+      if (cfg && card.attachments?.length) {
+        await Promise.all(card.attachments.map(async att => {
+          try {
+            const ghFile = await readFile(cfg, att.path)
+            const raw = ghFile.content.replace(/\n/g, '')
+            const binary = atob(raw)
+            const bytes = new Uint8Array(binary.length)
+            for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i)
+            zip.file(att.name, bytes)
+          } catch { /* skip unreachable files */ }
+        }))
+      }
+
+      const blob = await zip.generateAsync({ type: 'blob' })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a'); a.href = url; a.download = `${card.id}.zip`; a.click()
+      URL.revokeObjectURL(url)
+    } catch (err) {
+      toast({ title: 'Erro ao exportar ZIP', description: String(err), variant: 'destructive' })
+    }
+  }
+
+  async function handleDownloadCard(card: KanbanCard, fmt: 'md' | 'docx' | 'zip') {
+    if (fmt === 'md') await exportCardMd(card)
+    else if (fmt === 'docx') await exportCardDocx(card)
+    else await exportCardZip(card)
   }
 
   async function onDragEnd(result: DropResult) {
@@ -812,6 +1019,11 @@ export function Kanban() {
                                     <KanbanCardView
                                       card={card}
                                       onEdit={() => openEdit(card)}
+                                      onQuickAttach={files => {
+                                        if (card.pautaId) { toast({ title: 'Abra o card para anexar mídias' }); return }
+                                        handleQuickAttach(card, files)
+                                      }}
+                                      onDownloadCard={fmt => handleDownloadCard(card, fmt)}
                                       isFromPautas={!!card.pautaId && col.id === 'pautas'}
                                     />
                                   </div>
@@ -920,6 +1132,55 @@ export function Kanban() {
               />
             </div>
 
+            {/* Attachments */}
+            <div className="space-y-2">
+              <Label>Imagens e Vídeos</Label>
+              {/* Drop zone */}
+              <div
+                className="border-2 border-dashed border-gray-200 rounded-lg p-4 text-center cursor-pointer hover:border-purple-400 hover:bg-purple-50 transition-colors"
+                onClick={() => dialogFileRef.current?.click()}
+                onDragOver={e => e.preventDefault()}
+                onDrop={e => {
+                  e.preventDefault()
+                  if (e.dataTransfer.files.length) handleDialogAttach(e.dataTransfer.files)
+                }}
+              >
+                <ImagePlus className="w-6 h-6 text-gray-300 mx-auto mb-1" />
+                <p className="text-xs text-gray-400">
+                  {attachUploading ? 'Enviando…' : 'Clique ou arraste imagens/vídeos aqui'}
+                </p>
+                <input
+                  ref={dialogFileRef}
+                  type="file"
+                  accept="image/*,video/*"
+                  multiple
+                  className="hidden"
+                  onChange={e => { if (e.target.files?.length) { handleDialogAttach(e.target.files); e.target.value = '' } }}
+                />
+              </div>
+              {/* Existing attachments */}
+              {cardAttachments.length > 0 && (
+                <div className="space-y-1">
+                  {cardAttachments.map(att => (
+                    <div key={att.id} className="flex items-center gap-2 bg-gray-50 rounded px-3 py-1.5">
+                      <Paperclip className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
+                      <span className="text-xs text-gray-700 flex-1 truncate">{att.name}</span>
+                      <span className="text-[10px] text-gray-400">
+                        {att.size < 1024 * 1024 ? `${(att.size / 1024).toFixed(0)} KB` : `${(att.size / (1024 * 1024)).toFixed(1)} MB`}
+                      </span>
+                      <button
+                        onClick={() => setCardAttachments(prev => prev.filter(a => a.id !== att.id))}
+                        className="text-gray-300 hover:text-red-400 flex-shrink-0"
+                        title="Remover"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
             {/* Share button */}
             {editCard && editCard.platforms.length > 0 && shareUrl(editCard) && (
               <a
@@ -936,21 +1197,17 @@ export function Kanban() {
 
             {/* Export */}
             {editCard && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  const md = `# ${editCard.title}\n\n${editCard.description}\n\n---\n*${editCard.log[0]?.author ?? ''} · ${formatDate(editCard.createdAt)}*`
-                  const blob = new Blob([md], { type: 'text/markdown' })
-                  const url = URL.createObjectURL(blob)
-                  const a = document.createElement('a')
-                  a.href = url; a.download = `${editCard.id}.md`; a.click()
-                  URL.revokeObjectURL(url)
-                }}
-              >
-                <Download className="w-4 h-4" />
-                Exportar Markdown
-              </Button>
+              <div className="flex gap-2 flex-wrap">
+                <Button variant="outline" size="sm" onClick={() => exportCardMd(editCard)}>
+                  <Download className="w-4 h-4" /> Markdown
+                </Button>
+                <Button variant="outline" size="sm" onClick={() => exportCardDocx(editCard)}>
+                  <Download className="w-4 h-4" /> Word (.docx)
+                </Button>
+                <Button variant="outline" size="sm" onClick={() => exportCardZip(editCard)}>
+                  <Download className="w-4 h-4" /> ZIP (texto + mídias)
+                </Button>
+              </div>
             )}
           </div>
           <DialogFooter>
