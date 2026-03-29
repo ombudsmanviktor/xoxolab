@@ -3,7 +3,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { DragDropContext, Droppable, Draggable, type DropResult } from '@hello-pangea/dnd'
 import {
   Plus, ChevronRight, ChevronLeft, ZoomIn, ZoomOut,
-  History, ExternalLink, X, Download, Share2, User,
+  History, ExternalLink, X, Download, Share2, User, UserCheck,
   Calendar, ChevronDown, ChevronUp, Pencil, Paperclip, ImagePlus, Trash2,
   FileText, FileType2, FolderArchive,
 } from 'lucide-react'
@@ -241,9 +241,15 @@ function KanbanCardView({
           )
         })}
         {card.assignee && (
-          <span className="flex items-center gap-0.5 text-[10px] text-gray-400">
-            <User className="w-3 h-3" />
+          <span className="flex items-center gap-0.5 text-[10px] text-gray-500" title={`Responsável: ${card.assignee}`}>
+            <User className="w-3 h-3 text-violet-400" />
             {card.assignee.split('@')[0]}
+          </span>
+        )}
+        {card.reviewer && (
+          <span className="flex items-center gap-0.5 text-[10px] text-gray-500" title={`Revisor: ${card.reviewer}`}>
+            <UserCheck className="w-3 h-3 text-blue-400" />
+            {card.reviewer.split('@')[0]}
           </span>
         )}
         {card.dueDate && (
@@ -1144,8 +1150,20 @@ export function Kanban() {
               </div>
               {(editColumn === 'agendamento' || (editCard && editCard.column === 'agendamento')) && (
                 <div className="space-y-1.5">
-                  <Label>Agendada para Publicação</Label>
-                  <Input type="date" value={cardScheduledAt} onChange={e => setCardScheduledAt(e.target.value)} />
+                  <Label className="flex items-center gap-1.5">
+                    Agendada para Publicação
+                    {!cardScheduledAt && (
+                      <span className="text-[10px] font-semibold text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded-full">
+                        ⚠ Obrigatório — define prazo de publicação
+                      </span>
+                    )}
+                  </Label>
+                  <Input
+                    type="date"
+                    value={cardScheduledAt}
+                    onChange={e => setCardScheduledAt(e.target.value)}
+                    className={cn(!cardScheduledAt && 'border-amber-400 ring-1 ring-amber-300 focus-visible:ring-amber-400')}
+                  />
                 </div>
               )}
             </div>

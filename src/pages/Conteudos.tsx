@@ -1,4 +1,5 @@
-import { useState, useMemo, useRef, useEffect } from 'react'
+import { useState, useMemo, useRef, useEffect, useCallback } from 'react'
+import { createPortal } from 'react-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   Plus, Pencil, ChevronUp, ChevronDown, X,
@@ -6,7 +7,7 @@ import {
 } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 import { useProject } from '@/contexts/ProjectContext'
-import { loadConteudos, saveConteudos, saveKanbanCard } from '@/lib/storage'
+import { loadConteudos, saveConteudos, saveKanbanCard, deleteKanbanCard } from '@/lib/storage'
 import { sendMentionNotification } from '@/lib/emailjs'
 import { generateId, formatDate } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
@@ -76,7 +77,7 @@ function UserChip({ email, onClear }: { email: string; onClear?: () => void }) {
   )
 }
 
-// ─── User picker popover ──────────────────────────────────────────────────
+// ─── User picker popover (portal-based to avoid table overflow clipping) ──
 
 function UserPicker({
   users, value, onChange, placeholder = 'Indefinido',
@@ -85,58 +86,96 @@ function UserPicker({
 }) {
   const [open, setOpen] = useState(false)
   const [query, setQuery] = useState('')
-  const ref = useRef<HTMLDivElement>(null)
+  const [pos, setPos] = useState({ top: 0, left: 0, width: 220 })
+  const triggerRef = useRef<HTMLButtonElement>(null)
+  const dropRef = useRef<HTMLDivElement>(null)
+
+  const updatePos = useCallback(() => {
+    if (!triggerRef.current) return
+    const rect = triggerRef.current.getBoundingClientRect()
+    setPos({
+      top: rect.bottom + window.scrollY + 4,
+      left: rect.left + window.scrollX,
+      width: Math.max(220, rect.width),
+    })
+  }, [])
 
   useEffect(() => {
     if (!open) return
-    const handler = (e: MouseEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false) }
-    document.addEventListener('mousedown', handler)
-    return () => document.removeEventListener('mousedown', handler)
-  }, [open])
+    updatePos()
+    const handleClose = (e: MouseEvent) => {
+      if (
+        triggerRef.current && !triggerRef.current.contains(e.target as Node) &&
+        dropRef.current && !dropRef.current.contains(e.target as Node)
+      ) setOpen(false)
+    }
+    const handleScroll = () => updatePos()
+    document.addEventListener('mousedown', handleClose)
+    window.addEventListener('scroll', handleScroll, true)
+    return () => {
+      document.removeEventListener('mousedown', handleClose)
+      window.removeEventListener('scroll', handleScroll, true)
+    }
+  }, [open, updatePos])
 
-  const filtered = users.filter(u => u.toLowerCase().includes(query.replace('@', '').toLowerCase()))
+  const filtered = users.filter(u =>
+    !query.trim() || u.toLowerCase().includes(query.replace('@', '').toLowerCase())
+  )
+
+  const dropdown = open ? createPortal(
+    <div
+      ref={dropRef}
+      style={{ position: 'absolute', top: pos.top, left: pos.left, width: pos.width, zIndex: 9999 }}
+      className="bg-white border border-gray-200 rounded-lg shadow-xl"
+    >
+      <div className="p-2 border-b border-gray-100">
+        <input
+          autoFocus
+          value={query}
+          onChange={e => setQuery(e.target.value)}
+          placeholder="@usuário..."
+          className="w-full text-xs outline-none placeholder:text-gray-300"
+        />
+      </div>
+      <div className="max-h-48 overflow-y-auto py-1">
+        <button
+          onMouseDown={e => e.preventDefault()}
+          onClick={() => { onChange(undefined); setOpen(false); setQuery('') }}
+          className="w-full px-3 py-1.5 text-xs text-gray-400 hover:bg-gray-50 text-left"
+        >
+          Indefinido
+        </button>
+        {filtered.length === 0 && (
+          <p className="px-3 py-1.5 text-xs text-gray-400">Nenhum usuário encontrado</p>
+        )}
+        {filtered.map(u => (
+          <button
+            key={u}
+            onMouseDown={e => e.preventDefault()}
+            onClick={() => { onChange(u); setOpen(false); setQuery('') }}
+            className="w-full px-3 py-1.5 text-xs hover:bg-violet-50 text-left flex items-center gap-2"
+          >
+            <UserChip email={u} />
+          </button>
+        ))}
+      </div>
+    </div>,
+    document.body
+  ) : null
 
   return (
-    <div className="relative" ref={ref}>
+    <div className="relative">
       <button
+        ref={triggerRef}
         onClick={() => { setOpen(v => !v); setQuery('') }}
         className="flex items-center gap-1 text-xs min-w-0"
       >
-        {value ? <UserChip email={value} /> : <span className="text-gray-400 flex items-center gap-1"><User className="w-3 h-3" />{placeholder}</span>}
+        {value
+          ? <UserChip email={value} />
+          : <span className="text-gray-400 flex items-center gap-1"><User className="w-3 h-3" />{placeholder}</span>
+        }
       </button>
-      {open && (
-        <div className="absolute top-full left-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50 min-w-[200px]">
-          <div className="p-2 border-b border-gray-100">
-            <input
-              autoFocus
-              value={query}
-              onChange={e => setQuery(e.target.value)}
-              placeholder="@usuário..."
-              className="w-full text-xs outline-none placeholder:text-gray-300"
-            />
-          </div>
-          <div className="max-h-40 overflow-y-auto py-1">
-            <button
-              onClick={() => { onChange(undefined); setOpen(false) }}
-              className="w-full px-3 py-1.5 text-xs text-gray-400 hover:bg-gray-50 text-left"
-            >
-              Indefinido
-            </button>
-            {filtered.map(u => (
-              <button
-                key={u}
-                onClick={() => { onChange(u); setOpen(false) }}
-                className="w-full px-3 py-1.5 text-xs hover:bg-violet-50 text-left flex items-center gap-2"
-              >
-                <UserChip email={u} />
-              </button>
-            ))}
-            {filtered.length === 0 && query && (
-              <p className="px-3 py-1.5 text-xs text-gray-400">Nenhum usuário encontrado</p>
-            )}
-          </div>
-        </div>
-      )}
+      {dropdown}
     </div>
   )
 }
@@ -215,7 +254,26 @@ export function Conteudos() {
     const idx = PROGRESSO_CYCLE.indexOf(item.progresso)
     const next = PROGRESSO_CYCLE[(idx + 1) % PROGRESSO_CYCLE.length]
     const now = new Date().toISOString()
-    const updated: ConteudoItem = { ...item, progresso: next, updatedAt: now }
+
+    // If leaving 'pronto' and a Kanban card exists, remove it to avoid duplicates
+    if (item.progresso === 'pronto' && item.kanbanCardId) {
+      try {
+        await deleteKanbanCard(projectId, item.kanbanCardId)
+        queryClient.setQueryData(['kanban', projectId], (prev: KanbanCard[] = []) =>
+          prev.filter(c => c.id !== item.kanbanCardId)
+        )
+        toast({ title: 'Card removido do Kanban' })
+      } catch {
+        // Card may already not exist; continue regardless
+      }
+    }
+
+    const updated: ConteudoItem = {
+      ...item,
+      progresso: next,
+      kanbanCardId: item.progresso === 'pronto' ? undefined : item.kanbanCardId,
+      updatedAt: now,
+    }
     const newItems = data.items.map(i => i.id === item.id ? updated : i)
     await saveData({ ...data, items: newItems })
 
