@@ -66,8 +66,21 @@ async function readYaml<T>(path: string): Promise<T | null> {
 async function writeYaml<T>(path: string, data: T, message: string): Promise<void> {
   const text = yaml.dump(data, { lineWidth: -1 })
   const sha = shaCache.get(path)
-  const res = await writeTextFile(cfg(), path, text, message, sha)
-  shaCache.set(path, res.content.sha)
+  try {
+    const res = await writeTextFile(cfg(), path, text, message, sha)
+    shaCache.set(path, res.content.sha)
+  } catch (err: unknown) {
+    // SHA mismatch (409 conflict) — fetch current SHA from GitHub and retry once
+    const msg = err instanceof Error ? err.message : String(err)
+    if (msg.includes('does not match') || msg.includes('409') || msg.includes('conflict')) {
+      const current = await readFile(cfg(), path)
+      shaCache.set(path, current.sha)
+      const res = await writeTextFile(cfg(), path, text, message, current.sha)
+      shaCache.set(path, res.content.sha)
+    } else {
+      throw err
+    }
+  }
 }
 
 async function removeYaml(path: string, message: string): Promise<void> {
