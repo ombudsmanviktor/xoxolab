@@ -4,7 +4,7 @@ import { DragDropContext, Droppable, Draggable, type DropResult } from '@hello-p
 import {
   Plus, ChevronRight, ChevronLeft, ZoomIn, ZoomOut,
   History, ExternalLink, X, Download, Share2, User, UserCheck,
-  Calendar, ChevronDown, ChevronUp, Pencil, Paperclip, ImagePlus, Trash2,
+  Calendar, CalendarCheck, ChevronDown, ChevronUp, Pencil, Paperclip, ImagePlus, Trash2,
   FileText, FileType2, FolderArchive,
 } from 'lucide-react'
 import { format, eachMonthOfInterval, startOfMonth, endOfMonth, addMonths, subMonths, parseISO, isValid } from 'date-fns'
@@ -253,9 +253,21 @@ function KanbanCardView({
           </span>
         )}
         {card.dueDate && (
-          <span className={cn('flex items-center gap-0.5 text-[10px]', isOverdue ? 'text-red-500' : isDueSoon ? 'text-amber-500' : 'text-gray-400')}>
+          <span
+            className={cn('flex items-center gap-0.5 text-[10px]', isOverdue ? 'text-red-500' : isDueSoon ? 'text-amber-500' : 'text-gray-400')}
+            title="Previsão de Publicação"
+          >
             <Calendar className="w-3 h-3" />
             {formatDate(card.dueDate)}
+          </span>
+        )}
+        {card.scheduledAt && (
+          <span
+            className="flex items-center gap-0.5 text-[10px] text-purple-600 font-medium"
+            title="Agendada para Publicação"
+          >
+            <CalendarCheck className="w-3 h-3" />
+            {formatDate(card.scheduledAt)}
           </span>
         )}
       </div>
