@@ -11,7 +11,7 @@ import { format, eachMonthOfInterval, startOfMonth, endOfMonth, addMonths, subMo
 import { ptBR } from 'date-fns/locale'
 import { useAuth } from '@/contexts/AuthContext'
 import { useProject } from '@/contexts/ProjectContext'
-import { loadKanbanCards, saveKanbanCard, deleteKanbanCard, loadPautas, savePautas, loadEventos, uploadKanbanAttachment } from '@/lib/storage'
+import { loadKanbanCards, saveKanbanCard, deleteKanbanCard, loadEventos, uploadKanbanAttachment } from '@/lib/storage'
 import { readFile, getGitHubConfig } from '@/lib/github'
 import { sendMentionNotification } from '@/lib/emailjs'
 import { extractMentions, generateId, formatDate, formatDateTime, todayISO } from '@/lib/utils'
@@ -26,16 +26,28 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useToast } from '@/hooks/useToast'
 import { ToastContainer } from '@/components/ui/toast'
 import { cn } from '@/lib/utils'
-import type { KanbanCard, KanbanColumn, KanbanPriority, KanbanLogEntry, PautaItem, Evento, Attachment } from '@/types'
+import type { KanbanCard, KanbanColumn, KanbanPriority, KanbanLogEntry, Evento, Attachment } from '@/types'
 
 const COLUMNS: { id: KanbanColumn; label: string; color: string; collapsedByDefault: boolean }[] = [
-  { id: 'pautas',               label: 'Pautas',               color: 'bg-gray-100 border-gray-200',    collapsedByDefault: true },
-  { id: 'em-construcao',        label: 'Em Construção',         color: 'bg-blue-50 border-blue-200',     collapsedByDefault: false },
-  { id: 'em-revisao',           label: 'Em Revisão',            color: 'bg-amber-50 border-amber-200',   collapsedByDefault: false },
-  { id: 'aguardando-aprovacao', label: 'Aguardando Aprovação',  color: 'bg-orange-50 border-orange-200', collapsedByDefault: false },
-  { id: 'divulgacao',           label: 'Divulgação',            color: 'bg-purple-50 border-purple-200', collapsedByDefault: false },
-  { id: 'finalizado',           label: 'Finalizadas',            color: 'bg-green-50 border-green-200',   collapsedByDefault: true },
+  { id: 'planejamento',      label: 'Planejamento',        color: 'bg-gray-100 border-gray-200',    collapsedByDefault: false },
+  { id: 'criacao',           label: 'Criação',             color: 'bg-blue-50 border-blue-200',     collapsedByDefault: false },
+  { id: 'revisao-aprovacao', label: 'Revisão / Aprovação', color: 'bg-amber-50 border-amber-200',   collapsedByDefault: false },
+  { id: 'agendamento',       label: 'Agendamento',         color: 'bg-purple-50 border-purple-200', collapsedByDefault: false },
+  { id: 'publicacao',        label: 'Publicação',          color: 'bg-green-50 border-green-200',   collapsedByDefault: true  },
 ]
+
+// Migrate old column IDs to new ones
+function migrateColumn(old: string): KanbanColumn {
+  const map: Record<string, KanbanColumn> = {
+    'pautas': 'planejamento',
+    'em-construcao': 'criacao',
+    'em-revisao': 'revisao-aprovacao',
+    'aguardando-aprovacao': 'revisao-aprovacao',
+    'divulgacao': 'agendamento',
+    'finalizado': 'publicacao',
+  }
+  return (map[old] ?? old) as KanbanColumn
+}
 
 const PRIORITY_LABELS: Record<KanbanPriority, string> = {
   baixa: 'Baixa', media: 'Média', alta: 'Alta', urgente: 'Urgente',
@@ -44,24 +56,6 @@ const PRIORITY_LABELS: Record<KanbanPriority, string> = {
 function appendLog(card: KanbanCard, action: string, author: string): KanbanCard {
   const entry: KanbanLogEntry = { id: generateId(), timestamp: new Date().toISOString(), action, author }
   return { ...card, log: [...(card.log ?? []), entry], updatedAt: new Date().toISOString() }
-}
-
-function pautaToKanbanCard(item: PautaItem): KanbanCard {
-  return {
-    id: `pauta-${item.id}`,
-    title: item.title,
-    description: item.body ?? '',
-    column: 'pautas',
-    order: item.order,
-    platforms: [],
-    attachments: [],
-    log: [],
-    mentions: item.mentions ?? [],
-    pautaId: item.id,
-    createdAt: item.createdAt,
-    updatedAt: item.updatedAt,
-    dueDate: item.dueDate,
-  }
 }
 
 // ─── Timeline ─────────────────────────────────────────────────────────────
@@ -146,13 +140,11 @@ function KanbanCardView({
   onEdit,
   onQuickAttach,
   onDownloadCard,
-  isFromPautas = false,
 }: {
   card: KanbanCard
   onEdit: () => void
   onQuickAttach: (files: FileList) => void
   onDownloadCard: (fmt: 'md' | 'docx' | 'zip') => void
-  isFromPautas?: boolean
 }) {
   const [showLog, setShowLog] = useState(false)
   const [isDragOver, setIsDragOver] = useState(false)
@@ -178,16 +170,23 @@ function KanbanCardView({
   const images = attachments.filter(a => a.type.startsWith('image/'))
   const videos = attachments.filter(a => a.type.startsWith('video/'))
 
+  // PENDENTE pills
+  const isPendente = (card.column === 'agendamento' && !card.scheduledAt) || (card.column === 'revisao-aprovacao' && !card.reviewer)
+
   return (
     <div
       className={cn(
         'group bg-white rounded-lg border border-gray-100 border-l-4 p-3 shadow-sm hover:shadow-md transition-shadow',
         borderColorClass,
-        isFromPautas && 'opacity-75'
       )}
     >
       <div className="flex items-start gap-1">
-        <p className="font-semibold text-gray-900 text-sm leading-snug mb-1 flex-1">{card.title}</p>
+        <div className="flex-1 min-w-0">
+          <p className="font-semibold text-gray-900 text-sm leading-snug mb-0.5">{card.title}</p>
+          {isPendente && (
+            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-yellow-100 text-yellow-700 font-medium">PENDENTE</span>
+          )}
+        </div>
         {/* Download dropdown */}
         <div className="relative opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" ref={dlRef}>
           <button
@@ -225,7 +224,7 @@ function KanbanCardView({
         </button>
       </div>
       {card.description && (
-        <p className="text-xs text-gray-500 line-clamp-2 mb-2">{card.description.slice(0, 100)}</p>
+        <p className="text-xs text-gray-500 line-clamp-2 mb-2 mt-1">{card.description.slice(0, 100)}</p>
       )}
 
       <div className="flex flex-wrap items-center gap-1.5 mt-2">
@@ -369,27 +368,24 @@ export function Kanban() {
   const [zoom, setZoom] = useState(1)
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editCard, setEditCard] = useState<KanbanCard | null>(null)
-  const [editColumn, setEditColumn] = useState<KanbanColumn>('em-construcao')
+  const [editColumn, setEditColumn] = useState<KanbanColumn>('criacao')
   const [cardTitle, setCardTitle] = useState('')
   const [cardDesc, setCardDesc] = useState('')
   const [cardPriority, setCardPriority] = useState<KanbanPriority | ''>('')
   const [cardPlatforms, setCardPlatforms] = useState<string[]>([])
   const [cardAssignee, setCardAssignee] = useState('')
+  const [cardReviewer, setCardReviewer] = useState('')
   const [cardDueDate, setCardDueDate] = useState('')
+  const [cardScheduledAt, setCardScheduledAt] = useState('')
   const [cardCustomPlatform, setCardCustomPlatform] = useState('')
   const [cardAttachments, setCardAttachments] = useState<Attachment[]>([])
   const [attachUploading, setAttachUploading] = useState(false)
   const [saving, setSaving] = useState(false)
   const dialogFileRef = useRef<HTMLInputElement>(null)
 
-  const { data: kanbanCards = [] } = useQuery({
+  const { data: rawKanbanCards = [] } = useQuery({
     queryKey: ['kanban', projectId],
     queryFn: () => loadKanbanCards(projectId),
-  })
-
-  const { data: pautaData } = useQuery({
-    queryKey: ['pautas', projectId],
-    queryFn: () => loadPautas(projectId),
   })
 
   const { data: eventos = [] } = useQuery({
@@ -397,18 +393,37 @@ export function Kanban() {
     queryFn: () => loadEventos(projectId),
   })
 
-  const pautasCards = useMemo(() => (pautaData?.items ?? []).map(pautaToKanbanCard), [pautaData])
+  // Apply column migration (old IDs → new IDs)
+  const kanbanCards = useMemo(() =>
+    rawKanbanCards.map(c => ({ ...c, column: migrateColumn(c.column) })),
+    [rawKanbanCards]
+  )
 
-  const allCards = useMemo(() => {
-    // Don't show kanban cards that originated from pautas AND are still in pautas column
-    const stored = kanbanCards.filter(c => !(c.pautaId && c.column === 'pautas'))
-    return stored
-  }, [kanbanCards])
+  const allCards = kanbanCards
+
+  // Auto-transfer: agendamento cards past scheduledAt → publicacao
+  useEffect(() => {
+    const today = new Date().toISOString().slice(0, 10)
+    const toPublish = kanbanCards.filter(
+      c => c.column === 'agendamento' && c.scheduledAt && c.scheduledAt <= today
+    )
+    if (toPublish.length === 0) return
+    toPublish.forEach(async card => {
+      const updated: KanbanCard = appendLog(
+        { ...card, column: 'publicacao', updatedAt: new Date().toISOString() },
+        'Publicação agendada — movido automaticamente',
+        'sistema'
+      )
+      await saveKanbanCard(projectId, updated)
+      queryClient.setQueryData(['kanban', projectId], (prev: KanbanCard[] = []) =>
+        prev.map(c => c.id === updated.id ? updated : c)
+      )
+    })
+  }, [kanbanCards.length]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const cardsByColumn = useMemo(() => {
     const map = new Map<KanbanColumn, KanbanCard[]>()
     for (const col of COLUMNS) map.set(col.id, [])
-    map.set('pautas', [...pautasCards])
     for (const card of allCards) {
       const list = map.get(card.column) ?? []
       list.push(card)
@@ -416,7 +431,7 @@ export function Kanban() {
     }
     for (const [, list] of map) list.sort((a, b) => a.order - b.order)
     return map
-  }, [allCards, pautasCards])
+  }, [allCards])
 
   function toggleCollapse(col: KanbanColumn) {
     setCollapsed(prev => {
@@ -427,10 +442,11 @@ export function Kanban() {
     })
   }
 
-  function openNew(column: KanbanColumn = 'em-construcao') {
+  function openNew(column: KanbanColumn = 'criacao') {
     setEditCard(null)
-    setEditColumn(column === 'finalizado' ? 'em-construcao' : column)
-    setCardTitle(''); setCardDesc(''); setCardPriority(''); setCardPlatforms([]); setCardAssignee(''); setCardDueDate(''); setCardCustomPlatform('')
+    setEditColumn(column === 'publicacao' ? 'criacao' : column)
+    setCardTitle(''); setCardDesc(''); setCardPriority(''); setCardPlatforms([])
+    setCardAssignee(''); setCardReviewer(''); setCardDueDate(''); setCardScheduledAt(''); setCardCustomPlatform('')
     setCardAttachments([])
     setDialogOpen(true)
   }
@@ -447,7 +463,9 @@ export function Kanban() {
     setCardPlatforms(knownPlatforms)
     setCardCustomPlatform(customPlatforms[0] ?? '')
     setCardAssignee(card.assignee ?? '')
+    setCardReviewer(card.reviewer ?? '')
     setCardDueDate(card.dueDate ?? '')
+    setCardScheduledAt(card.scheduledAt ?? '')
     setCardAttachments(card.attachments ?? [])
     setDialogOpen(true)
   }
@@ -465,24 +483,13 @@ export function Kanban() {
         ? [...new Set([...cardPlatforms, cardCustomPlatform.trim()])]
         : cardPlatforms
 
+      // Notify reviewer if newly set
+      if (cardReviewer && cardReviewer !== editCard?.reviewer && cardReviewer !== session?.email) {
+        added.push(cardReviewer)
+      }
+
       let card: KanbanCard
       if (editCard) {
-        // If editing a pautas-derived card → update the PautaItem in storage
-        if (editCard.pautaId) {
-          const currentPautas = pautaData ?? { sections: [], items: [], tags: [] }
-          const updatedItems = currentPautas.items.map(item =>
-            item.id === editCard.pautaId
-              ? { ...item, title: cardTitle.trim(), body: cardDesc || undefined, dueDate: cardDueDate || undefined, mentions: newMentions, updatedAt: now }
-              : item
-          )
-          const updatedPautas = { ...currentPautas, items: updatedItems }
-          await savePautas(projectId, updatedPautas)
-          queryClient.setQueryData(['pautas', projectId], updatedPautas)
-          setDialogOpen(false)
-          toast({ title: 'Item de Pautas atualizado' })
-          setSaving(false)
-          return
-        }
         card = appendLog(
           {
             ...editCard,
@@ -491,7 +498,9 @@ export function Kanban() {
             priority: cardPriority || undefined,
             platforms,
             assignee: cardAssignee || undefined,
+            reviewer: cardReviewer || undefined,
             dueDate: cardDueDate || undefined,
+            scheduledAt: cardScheduledAt || undefined,
             attachments: cardAttachments,
             mentions: newMentions,
             updatedAt: now,
@@ -505,31 +514,6 @@ export function Kanban() {
         )
       } else {
         const existingInCol = cardsByColumn.get(editColumn) ?? []
-        const newId = generateId()
-        // If creating in pautas column → also persist as a PautaItem
-        if (editColumn === 'pautas') {
-          const currentPautas = pautaData ?? { sections: [], items: [], tags: [] }
-          const pautaItem: PautaItem = {
-            id: newId,
-            title: cardTitle.trim(),
-            body: cardDesc || undefined,
-            order: currentPautas.items.length,
-            tags: [],
-            attachments: [],
-            dueDate: cardDueDate || undefined,
-            mentions: extractMentions(cardDesc),
-            createdAt: now,
-            updatedAt: now,
-          }
-          const updatedPautas = { ...currentPautas, items: [...currentPautas.items, pautaItem] }
-          await savePautas(projectId, updatedPautas)
-          queryClient.setQueryData(['pautas', projectId], updatedPautas)
-          // The pauta item will automatically appear in kanban via pautasCards — no need to save a KanbanCard
-          setDialogOpen(false)
-          toast({ title: 'Item criado em Pautas' })
-          setSaving(false)
-          return
-        }
         card = appendLog(
           {
             id: generateId(),
@@ -540,7 +524,9 @@ export function Kanban() {
             priority: cardPriority || undefined,
             platforms,
             assignee: cardAssignee || undefined,
+            reviewer: cardReviewer || undefined,
             dueDate: cardDueDate || undefined,
+            scheduledAt: cardScheduledAt || undefined,
             attachments: cardAttachments,
             log: [],
             mentions: newMentions,
@@ -729,36 +715,6 @@ export function Kanban() {
     const srcCol = source.droppableId as KanbanColumn
     const dstCol = destination.droppableId as KanbanColumn
 
-    // If dragging from pautas column → promote to a real kanban card AND remove from Pautas
-    if (srcCol === 'pautas') {
-      const pautaCard = pautasCards.find(c => c.id === draggableId)
-      if (!pautaCard) return
-      const now = new Date().toISOString()
-      const newCard: KanbanCard = appendLog(
-        {
-          ...pautaCard,
-          id: generateId(),
-          column: dstCol,
-          order: destination.index,
-          pautaId: undefined, // promoted: no longer linked to pauta
-          createdAt: now,
-          updatedAt: now,
-        },
-        `Movido de Pautas para ${COLUMNS.find(c => c.id === dstCol)?.label ?? dstCol}`,
-        session!.email
-      )
-      await saveKanbanCard(projectId, newCard)
-      queryClient.setQueryData(['kanban', projectId], (prev: KanbanCard[] = []) => [...prev, newCard])
-
-      // Remove corresponding PautaItem from Pautas storage
-      if (pautaCard.pautaId && pautaData) {
-        const updatedPautas = { ...pautaData, items: pautaData.items.filter(i => i.id !== pautaCard.pautaId) }
-        await savePautas(projectId, updatedPautas)
-        queryClient.setQueryData(['pautas', projectId], updatedPautas)
-      }
-      return
-    }
-
     const card = allCards.find(c => c.id === draggableId)
     if (!card) return
 
@@ -793,7 +749,7 @@ export function Kanban() {
       const rangeStart = subMonths(startOfMonth(new Date()), 1)
       const rangeEnd = addMonths(endOfMonth(new Date()), 6 / zoom)
       const months = eachMonthOfInterval({ start: rangeStart, end: rangeEnd })
-      const cardsWithDates = [...allCards, ...pautasCards].filter(c => c.dueDate && isValid(parseISO(c.dueDate)))
+      const cardsWithDates = allCards.filter(c => c.dueDate && isValid(parseISO(c.dueDate)))
 
       for (const month of months) {
         const monthStr = format(month, 'yyyy-MM')
@@ -988,7 +944,7 @@ export function Kanban() {
       {/* Board wrapper (timeline + columns scroll together) */}
       <div className="overflow-x-auto rounded-xl border border-gray-200" ref={boardRef}>
         {/* Timeline */}
-        <KanbanTimeline cards={[...allCards, ...pautasCards]} eventos={eventos} totalWidth={totalWidth} monthCount={monthCount} />
+        <KanbanTimeline cards={allCards} eventos={eventos} totalWidth={totalWidth} monthCount={monthCount} />
 
         {/* Divider between timeline and board */}
         <div className="border-t-4 border-gray-200 bg-gray-100 px-4 py-1.5 flex items-center gap-2">
@@ -1031,7 +987,7 @@ export function Kanban() {
                         </button>
                         <span className="font-semibold text-sm text-gray-700 flex-1">{col.label}</span>
                         <Badge variant="secondary" className="text-[10px] px-1.5">{cards.length}</Badge>
-                        {col.id !== 'finalizado' && (
+                        {col.id !== 'publicacao' && (
                           <button
                             onClick={() => openNew(col.id)}
                             className="text-gray-400 hover:text-purple-600 transition-colors"
@@ -1042,7 +998,7 @@ export function Kanban() {
                       </div>
 
                       {/* Cards */}
-                      <Droppable droppableId={col.id} isDropDisabled={col.id === 'pautas'}>
+                      <Droppable droppableId={col.id} isDropDisabled={false}>
                         {(provided, snapshot) => (
                           <div
                             ref={provided.innerRef}
@@ -1058,7 +1014,7 @@ export function Kanban() {
                                 key={card.id}
                                 draggableId={card.id}
                                 index={i}
-                                isDragDisabled={col.id === 'finalizado'}
+                                isDragDisabled={col.id === 'publicacao'}
                               >
                                 {(provided, snapshot) => (
                                   <div
@@ -1075,7 +1031,6 @@ export function Kanban() {
                                         handleQuickAttach(card, files)
                                       }}
                                       onDownloadCard={fmt => handleDownloadCard(card, fmt)}
-                                      isFromPautas={!!card.pautaId && col.id === 'pautas'}
                                     />
                                   </div>
                                 )}
@@ -1111,7 +1066,7 @@ export function Kanban() {
                 <Select value={editColumn} onValueChange={v => setEditColumn(v as KanbanColumn)}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    {COLUMNS.filter(c => c.id !== 'finalizado').map(c => (
+                    {COLUMNS.filter(c => c.id !== 'publicacao').map(c => (
                       <SelectItem key={c.id} value={c.id}>{c.label}</SelectItem>
                     ))}
                   </SelectContent>
@@ -1168,9 +1123,31 @@ export function Kanban() {
                 </select>
               </div>
               <div className="space-y-1.5">
-                <Label>Prazo</Label>
+                <Label>
+                  Revisor
+                  {editColumn === 'revisao-aprovacao' && <span className="ml-1 text-[10px] text-amber-600 font-normal">(necessário nesta coluna)</span>}
+                </Label>
+                <select
+                  className="flex h-9 w-full rounded-md border border-gray-200 bg-white px-3 py-1 text-sm text-gray-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500"
+                  value={cardReviewer}
+                  onChange={e => setCardReviewer(e.target.value)}
+                >
+                  <option value="">Não definido</option>
+                  {projectMeta?.users.map(u => <option key={u} value={u}>{u}</option>)}
+                </select>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <Label>Previsão de Publicação</Label>
                 <Input type="date" value={cardDueDate} onChange={e => setCardDueDate(e.target.value)} />
               </div>
+              {(editColumn === 'agendamento' || (editCard && editCard.column === 'agendamento')) && (
+                <div className="space-y-1.5">
+                  <Label>Agendada para Publicação</Label>
+                  <Input type="date" value={cardScheduledAt} onChange={e => setCardScheduledAt(e.target.value)} />
+                </div>
+              )}
             </div>
             <div className="space-y-1.5">
               <Label>Descrição</Label>

@@ -102,7 +102,7 @@ const logEntry = (action: string, author = DEMO_EMAIL) => ({
 
 const DEMO_KANBAN: KanbanCard[] = [
   {
-    id: 'kc1', title: 'Reels sobre bastidores do evento anual', column: 'em-construcao', order: 0,
+    id: 'kc1', title: 'Reels sobre bastidores do evento anual', column: 'criacao', order: 0,
     description: 'Vídeo de 30s mostrando a equipe e o processo criativo do evento. Edição em andamento.',
     priority: 'media', platforms: ['instagram', 'tiktok'], assignee: COLEGA,
     dueDate: '2026-04-10', attachments: [], mentions: [], pautaId: undefined,
@@ -110,7 +110,7 @@ const DEMO_KANBAN: KanbanCard[] = [
     createdAt: NOW, updatedAt: NOW,
   },
   {
-    id: 'kc2', title: 'Post comemorativo — 10k seguidores', column: 'em-revisao', order: 0,
+    id: 'kc2', title: 'Post comemorativo — 10k seguidores', column: 'revisao-aprovacao', order: 0,
     description: 'Agradecimento à comunidade pelos 10 mil seguidores no Instagram. Incluir enquete nos stories.',
     priority: 'alta', platforms: ['instagram'], assignee: DEMO_EMAIL,
     attachments: [], mentions: [], pautaId: undefined,
@@ -118,7 +118,7 @@ const DEMO_KANBAN: KanbanCard[] = [
     createdAt: NOW, updatedAt: NOW,
   },
   {
-    id: 'kc3', title: 'Campanha Dia das Mães — criativos', column: 'aguardando-aprovacao', order: 0,
+    id: 'kc3', title: 'Campanha Dia das Mães — criativos', column: 'agendamento', order: 0,
     description: 'Pacote de 4 artes + 2 vídeos curtos para feed e stories. Aprovação pendente do cliente.',
     priority: 'alta', platforms: ['instagram', 'facebook'], assignee: COLEGA,
     dueDate: '2026-05-09', attachments: [], mentions: [COLEGA], pautaId: 'pi3',
@@ -126,7 +126,7 @@ const DEMO_KANBAN: KanbanCard[] = [
     createdAt: NOW, updatedAt: NOW,
   },
   {
-    id: 'kc4', title: 'Stories de Semana Santa', column: 'finalizado', order: 0,
+    id: 'kc4', title: 'Stories de Semana Santa', column: 'publicacao', order: 0,
     description: 'Série de 5 stories com mensagem institucional. Publicado com sucesso.',
     priority: 'baixa', platforms: ['instagram'], assignee: DEMO_EMAIL,
     attachments: [], mentions: [], pautaId: undefined,

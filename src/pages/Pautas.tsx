@@ -1,10 +1,10 @@
 import { useState, useRef, useMemo, useEffect } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { DragDropContext, Droppable, Draggable, type DropResult } from '@hello-pangea/dnd'
-import { Plus, GripVertical, Trash2, Download, Tag, FolderPlus, ChevronDown, ChevronUp, X } from 'lucide-react'
+import { Plus, GripVertical, Trash2, Download, Tag, FolderPlus, ChevronDown, ChevronUp, X, SendHorizonal } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 import { useProject } from '@/contexts/ProjectContext'
-import { loadPautas, savePautas } from '@/lib/storage'
+import { loadPautas, savePautas, loadConteudos, saveConteudos } from '@/lib/storage'
 import { sendMentionNotification } from '@/lib/emailjs'
 import { extractMentions, generateId, todayISO, formatDate } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
@@ -16,7 +16,7 @@ import { Badge } from '@/components/ui/badge'
 import { useToast } from '@/hooks/useToast'
 import { ToastContainer } from '@/components/ui/toast'
 import { cn } from '@/lib/utils'
-import type { PautaData, PautaItem, PautaSection, PautaTag } from '@/types'
+import type { PautaData, PautaItem, PautaSection, PautaTag, ConteudoItem } from '@/types'
 
 const TAG_COLORS = [
   { bg: 'bg-purple-100', text: 'text-purple-700', value: 'purple' },
@@ -194,6 +194,35 @@ export function Pautas() {
     const newItems = data.items.filter(i => i.id !== id)
     await saveData({ ...data, items: newItems })
     setItemDialog(false)
+  }
+
+  async function handleForwardToConteudos(item: PautaItem) {
+    try {
+      const conteudos = await loadConteudos(projectId)
+      // Avoid duplicate forwarding
+      if (conteudos.items.some(c => c.pautaId === item.id)) {
+        toast({ title: 'Pauta já encaminhada', description: 'Esta pauta já foi enviada para Conteúdos.', variant: 'destructive' })
+        return
+      }
+      const now = new Date().toISOString()
+      const newConteudo: ConteudoItem = {
+        id: generateId(),
+        descricao: item.title,
+        body: item.body,
+        importancia: 'baixa',
+        progresso: 'na-fila',
+        pautaId: item.id,
+        order: conteudos.items.length,
+        createdAt: now,
+        updatedAt: now,
+      }
+      await saveConteudos(projectId, { ...conteudos, items: [...conteudos.items, newConteudo] })
+      // Remove from Pautas
+      await handleDeleteItem(item.id)
+      toast({ title: 'Pauta enviada para Conteúdos' })
+    } catch (err) {
+      toast({ title: 'Erro ao encaminhar', description: String(err), variant: 'destructive' })
+    }
   }
 
   async function handleAddSection() {
@@ -403,6 +432,13 @@ export function Pautas() {
                 )}
               </div>
             </div>
+            <button
+              onClick={() => handleForwardToConteudos(item)}
+              className="opacity-0 group-hover:opacity-100 text-gray-300 hover:text-violet-500 transition-all flex-shrink-0"
+              title="Enviar para Conteúdos"
+            >
+              <SendHorizonal className="w-3.5 h-3.5" />
+            </button>
             <button
               onClick={() => handleDeleteItem(item.id)}
               className="opacity-0 group-hover:opacity-100 text-gray-300 hover:text-red-400 transition-all flex-shrink-0"

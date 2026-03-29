@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { NavLink, useNavigate } from 'react-router-dom'
 import {
   Megaphone, AlignLeft, Columns3, CalendarDays, BookOpen,
-  Link2, Users, KeyRound, ArrowLeft, Menu, X, LogOut,
+  Link2, Users, KeyRound, ArrowLeft, Menu, X, LogOut, LayoutList,
 } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 import { useProject } from '@/contexts/ProjectContext'
@@ -10,8 +10,9 @@ import { cn } from '@/lib/utils'
 
 const NAV_ITEMS = [
   { to: 'avisos',     label: 'Quadro de Avisos', icon: Megaphone,    activeClass: 'bg-amber-50 text-amber-700',   iconClass: 'text-amber-600' },
-  { to: 'pautas',     label: 'Pautas',           icon: AlignLeft,    activeClass: 'bg-orange-50 text-orange-700', iconClass: 'text-orange-600' },
-  { to: 'kanban',     label: 'Kanban',            icon: Columns3,     activeClass: 'bg-pink-50 text-pink-700',     iconClass: 'text-pink-600' },
+  { to: 'pautas',     label: 'Pautas',            icon: AlignLeft,    activeClass: 'bg-orange-50 text-orange-700',  iconClass: 'text-orange-600' },
+  { to: 'conteudos',  label: 'Conteúdos',         icon: LayoutList,   activeClass: 'bg-violet-50 text-violet-700',  iconClass: 'text-violet-600' },
+  { to: 'kanban',     label: 'Kanban',            icon: Columns3,     activeClass: 'bg-pink-50 text-pink-700',      iconClass: 'text-pink-600' },
   { to: 'efemerides', label: 'Efemérides',        icon: CalendarDays, activeClass: 'bg-blue-50 text-blue-700',    iconClass: 'text-blue-600' },
   { to: 'politicas',  label: 'Políticas',         icon: BookOpen,     activeClass: 'bg-teal-50 text-teal-700',    iconClass: 'text-teal-600' },
   { to: 'recursos',   label: 'Recursos',          icon: Link2,        activeClass: 'bg-emerald-50 text-emerald-700', iconClass: 'text-emerald-600' },

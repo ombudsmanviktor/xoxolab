@@ -17,6 +17,7 @@ import type {
   UsersIndex,
   Aviso,
   PautaData,
+  ConteudoData,
   KanbanCard,
   Evento,
   Politica,
@@ -213,6 +214,21 @@ export async function loadPautas(projectId: string): Promise<PautaData> {
 export async function savePautas(projectId: string, data: PautaData): Promise<void> {
   if (isDemoMode()) { demoSavePautas(data); return }
   await writeYaml(`projects/${projectId}/pautas/pautas.yaml`, data, 'Update pautas')
+}
+
+// ─── Conteúdos ────────────────────────────────────────────────────────────
+
+const EMPTY_CONTEUDOS: ConteudoData = { items: [], tipos: [] }
+
+export async function loadConteudos(projectId: string): Promise<ConteudoData> {
+  if (isDemoMode()) return EMPTY_CONTEUDOS
+  const data = await readYaml<ConteudoData>(`projects/${projectId}/conteudos/conteudos.yaml`)
+  return data ?? EMPTY_CONTEUDOS
+}
+
+export async function saveConteudos(projectId: string, data: ConteudoData): Promise<void> {
+  if (isDemoMode()) return
+  await writeYaml(`projects/${projectId}/conteudos/conteudos.yaml`, data, 'Update conteúdos')
 }
 
 // ─── Kanban ───────────────────────────────────────────────────────────────

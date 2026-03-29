@@ -77,15 +77,48 @@ export interface PautaData {
   tags: PautaTag[]
 }
 
+// ─── Conteúdos ────────────────────────────────────────────────────────────
+
+export type ConteudoProgresso =
+  | 'na-fila'
+  | 'em-producao'
+  | 'em-revisao'
+  | 'aguardando-aprovacao'
+  | 'atrasado'
+  | 'pronto'
+
+export type ConteudoImportancia = 'urgente' | 'alta' | 'media' | 'baixa'
+
+export interface ConteudoItem {
+  id: string
+  descricao: string
+  body?: string                // Markdown body (from editor)
+  atribuicao?: string          // email do usuário atribuído
+  prazo?: string               // ISO date
+  tipo?: string                // Artigo, Resenha, etc.
+  importancia: ConteudoImportancia
+  dependencia?: string         // email do usuário dependência
+  progresso: ConteudoProgresso
+  pautaId?: string             // ID da PautaItem de origem
+  kanbanCardId?: string        // ID do KanbanCard criado quando Pronto
+  order: number
+  createdAt: string
+  updatedAt: string
+}
+
+export interface ConteudoData {
+  items: ConteudoItem[]
+  tipos: string[]
+}
+
 // ─── Kanban ───────────────────────────────────────────────────────────────
 
 export type KanbanColumn =
-  | 'pautas'
-  | 'em-construcao'
-  | 'em-revisao'
-  | 'aguardando-aprovacao'
-  | 'divulgacao'
-  | 'finalizado'
+  | 'planejamento'
+  | 'criacao'
+  | 'revisao-aprovacao'
+  | 'agendamento'
+  | 'publicacao'
 
 export type KanbanPriority = 'baixa' | 'media' | 'alta' | 'urgente'
 
@@ -105,11 +138,14 @@ export interface KanbanCard {
   priority?: KanbanPriority
   platforms: string[]
   assignee?: string
-  dueDate?: string
+  reviewer?: string            // email do revisor (necessário em revisao-aprovacao)
+  dueDate?: string             // Previsão de Publicação
+  scheduledAt?: string         // Agendada para Publicação (só em agendamento)
   attachments: Attachment[]
   log: KanbanLogEntry[]
   mentions: string[]
   pautaId?: string
+  conteudoId?: string          // ID do ConteudoItem de origem
   createdAt: string
   updatedAt: string
 }

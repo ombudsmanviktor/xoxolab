@@ -9,6 +9,7 @@ import { Projects } from '@/pages/Projects'
 import { Settings } from '@/pages/Settings'
 import { Avisos } from '@/pages/Avisos'
 import { Pautas } from '@/pages/Pautas'
+import { Conteudos } from '@/pages/Conteudos'
 import { Kanban } from '@/pages/Kanban'
 import { Efemerides } from '@/pages/Efemerides'
 import { Politicas } from '@/pages/Politicas'
@@ -44,6 +45,7 @@ export default function App() {
                 <Route index element={<Navigate to="avisos" replace />} />
                 <Route path="avisos" element={<Avisos />} />
                 <Route path="pautas" element={<Pautas />} />
+                <Route path="conteudos" element={<Conteudos />} />
                 <Route path="kanban" element={<Kanban />} />
                 <Route path="efemerides" element={<Efemerides />} />
                 <Route path="politicas" element={<Politicas />} />
