@@ -7,6 +7,7 @@ export interface Attachment {
   type: string
   path: string
   url?: string
+  thumbnail?: string   // base64 data URL for image previews (generated client-side)
 }
 
 // ─── Projects ─────────────────────────────────────────────────────────────

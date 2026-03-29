@@ -1,10 +1,11 @@
-import { useState, useMemo, useRef, useEffect } from 'react'
+import React, { useState, useMemo, useRef, useEffect } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { DragDropContext, Droppable, Draggable, type DropResult } from '@hello-pangea/dnd'
 import {
   Plus, ChevronRight, ChevronLeft, ZoomIn, ZoomOut,
   History, ExternalLink, X, Download, Share2, User,
   Calendar, ChevronDown, ChevronUp, Pencil, Paperclip, ImagePlus, Trash2,
+  FileText, FileType2, FolderArchive,
 } from 'lucide-react'
 import { format, eachMonthOfInterval, startOfMonth, endOfMonth, addMonths, subMonths, parseISO, isValid } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
@@ -173,7 +174,9 @@ function KanbanCardView({
   const today = todayISO()
   const isOverdue = card.dueDate && card.dueDate < today
   const isDueSoon = card.dueDate && card.dueDate >= today && card.dueDate <= new Date(Date.now() + 3 * 86400000).toISOString().split('T')[0]
-  const mediaCount = card.attachments?.length ?? 0
+  const attachments = card.attachments ?? []
+  const images = attachments.filter(a => a.type.startsWith('image/'))
+  const videos = attachments.filter(a => a.type.startsWith('video/'))
 
   return (
     <div
@@ -195,17 +198,18 @@ function KanbanCardView({
             <Download className="w-3.5 h-3.5" />
           </button>
           {dlOpen && (
-            <div className="absolute right-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50 py-1 min-w-[160px]">
-              {[
-                { label: '📝 Markdown (.md)', fmt: 'md' as const },
-                { label: '📄 Word (.docx)', fmt: 'docx' as const },
-                { label: '📦 ZIP (texto + mídias)', fmt: 'zip' as const },
-              ].map(({ label, fmt }) => (
+            <div className="absolute right-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50 py-1 min-w-[170px]">
+              {([
+                { icon: <FileText className="w-3.5 h-3.5 text-gray-500" />, label: 'Markdown (.md)', fmt: 'md' as const },
+                { icon: <FileType2 className="w-3.5 h-3.5 text-blue-500" />, label: 'Word (.docx)', fmt: 'docx' as const },
+                { icon: <FolderArchive className="w-3.5 h-3.5 text-amber-500" />, label: 'ZIP (texto + mídias)', fmt: 'zip' as const },
+              ] as { icon: React.ReactNode; label: string; fmt: 'md' | 'docx' | 'zip' }[]).map(({ icon, label, fmt }) => (
                 <button
                   key={fmt}
                   onClick={e => { e.stopPropagation(); setDlOpen(false); onDownloadCard(fmt) }}
-                  className="w-full px-3 py-1.5 text-xs text-gray-700 hover:bg-gray-50 text-left"
+                  className="w-full px-3 py-1.5 text-xs text-gray-700 hover:bg-gray-50 text-left flex items-center gap-2"
                 >
+                  {icon}
                   {label}
                 </button>
               ))}
@@ -249,13 +253,37 @@ function KanbanCardView({
             {formatDate(card.dueDate)}
           </span>
         )}
-        {mediaCount > 0 && (
-          <span className="flex items-center gap-0.5 text-[10px] text-gray-400">
-            <Paperclip className="w-3 h-3" />
-            {mediaCount}
-          </span>
-        )}
       </div>
+
+      {/* Image thumbnails */}
+      {images.length > 0 && (
+        <div className="flex flex-wrap gap-1.5 mt-2">
+          {images.map(att => (
+            <div key={att.id} className="flex flex-col items-center gap-0.5">
+              {att.thumbnail
+                ? <img src={att.thumbnail} alt={att.name} className="w-12 h-12 object-cover rounded border border-gray-100" />
+                : <div className="w-12 h-12 rounded border border-gray-100 bg-gray-50 flex items-center justify-center"><ImagePlus className="w-4 h-4 text-gray-300" /></div>
+              }
+              <span className="flex items-center gap-0.5 text-[9px] text-gray-400 max-w-[48px] truncate">
+                <Paperclip className="w-2.5 h-2.5 flex-shrink-0" />
+                <span className="truncate">{att.name}</span>
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Video filenames */}
+      {videos.length > 0 && (
+        <div className="mt-1.5 space-y-0.5">
+          {videos.map(att => (
+            <div key={att.id} className="flex items-center gap-1 text-[10px] text-gray-400">
+              <Paperclip className="w-3 h-3 flex-shrink-0" />
+              <span className="truncate">{att.name}</span>
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Quick-attach drop zone */}
       <div
@@ -554,6 +582,26 @@ export function Kanban() {
 
   // ─── Attachment helpers ──────────────────────────────────────────────────
 
+  function generateThumbnail(file: File): Promise<string | undefined> {
+    if (!file.type.startsWith('image/')) return Promise.resolve(undefined)
+    return new Promise(resolve => {
+      const img = new Image()
+      const url = URL.createObjectURL(file)
+      img.onload = () => {
+        const MAX = 96
+        const ratio = Math.min(MAX / img.width, MAX / img.height, 1)
+        const canvas = document.createElement('canvas')
+        canvas.width = Math.round(img.width * ratio)
+        canvas.height = Math.round(img.height * ratio)
+        canvas.getContext('2d')!.drawImage(img, 0, 0, canvas.width, canvas.height)
+        URL.revokeObjectURL(url)
+        resolve(canvas.toDataURL('image/jpeg', 0.75))
+      }
+      img.onerror = () => { URL.revokeObjectURL(url); resolve(undefined) }
+      img.src = url
+    })
+  }
+
   async function uploadFiles(cardId: string, files: FileList): Promise<Attachment[]> {
     const results: Attachment[] = []
     for (const file of Array.from(files)) {
@@ -561,8 +609,11 @@ export function Kanban() {
         toast({ title: `"${file.name}" muito grande (máx 50 MB)`, variant: 'destructive' })
         continue
       }
-      const att = await uploadKanbanAttachment(projectId, cardId, file)
-      results.push(att)
+      const [att, thumbnail] = await Promise.all([
+        uploadKanbanAttachment(projectId, cardId, file),
+        generateThumbnail(file),
+      ])
+      results.push({ ...att, thumbnail })
     }
     return results
   }
@@ -1163,9 +1214,12 @@ export function Kanban() {
                 <div className="space-y-1">
                   {cardAttachments.map(att => (
                     <div key={att.id} className="flex items-center gap-2 bg-gray-50 rounded px-3 py-1.5">
-                      <Paperclip className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
+                      {att.thumbnail
+                        ? <img src={att.thumbnail} alt={att.name} className="w-10 h-10 object-cover rounded flex-shrink-0 border border-gray-200" />
+                        : <Paperclip className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                      }
                       <span className="text-xs text-gray-700 flex-1 truncate">{att.name}</span>
-                      <span className="text-[10px] text-gray-400">
+                      <span className="text-[10px] text-gray-400 flex-shrink-0">
                         {att.size < 1024 * 1024 ? `${(att.size / 1024).toFixed(0)} KB` : `${(att.size / (1024 * 1024)).toFixed(1)} MB`}
                       </span>
                       <button
@@ -1199,13 +1253,13 @@ export function Kanban() {
             {editCard && (
               <div className="flex gap-2 flex-wrap">
                 <Button variant="outline" size="sm" onClick={() => exportCardMd(editCard)}>
-                  <Download className="w-4 h-4" /> Markdown
+                  <FileText className="w-4 h-4 text-gray-500" /> Markdown
                 </Button>
                 <Button variant="outline" size="sm" onClick={() => exportCardDocx(editCard)}>
-                  <Download className="w-4 h-4" /> Word (.docx)
+                  <FileType2 className="w-4 h-4 text-blue-500" /> Word (.docx)
                 </Button>
                 <Button variant="outline" size="sm" onClick={() => exportCardZip(editCard)}>
-                  <Download className="w-4 h-4" /> ZIP (texto + mídias)
+                  <FolderArchive className="w-4 h-4 text-amber-500" /> ZIP
                 </Button>
               </div>
             )}
