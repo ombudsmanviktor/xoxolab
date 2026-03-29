@@ -407,7 +407,13 @@ export function Kanban() {
 
   const allCards = kanbanCards
 
-  // Auto-transfer: agendamento cards past scheduledAt → publicacao
+  // Auto-transfer: agendamento cards with scheduledAt <= today → publicacao
+  // Dependency key includes all scheduledAt values so it fires on every change
+  const scheduledAtKey = kanbanCards
+    .filter(c => c.column === 'agendamento')
+    .map(c => `${c.id}:${c.scheduledAt ?? ''}`)
+    .join('|')
+
   useEffect(() => {
     const today = new Date().toISOString().slice(0, 10)
     const toPublish = kanbanCards.filter(
@@ -417,7 +423,7 @@ export function Kanban() {
     toPublish.forEach(async card => {
       const updated: KanbanCard = appendLog(
         { ...card, column: 'publicacao', updatedAt: new Date().toISOString() },
-        'Publicação agendada — movido automaticamente',
+        'Data de publicação atingida — movido automaticamente para Publicação',
         'sistema'
       )
       await saveKanbanCard(projectId, updated)
@@ -425,7 +431,7 @@ export function Kanban() {
         prev.map(c => c.id === updated.id ? updated : c)
       )
     })
-  }, [kanbanCards.length]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [scheduledAtKey]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const cardsByColumn = useMemo(() => {
     const map = new Map<KanbanColumn, KanbanCard[]>()
@@ -554,6 +560,24 @@ export function Kanban() {
           moduleName: 'Kanban',
           excerpt: cardDesc.slice(0, 200),
         })
+      }
+
+      // Immediate transfer: if card is in agendamento and scheduledAt <= today, move to publicacao now
+      const today = new Date().toISOString().slice(0, 10)
+      if (card.column === 'agendamento' && card.scheduledAt && card.scheduledAt <= today) {
+        const published = appendLog(
+          { ...card, column: 'publicacao', updatedAt: new Date().toISOString() },
+          'Data de publicação atingida — movido para Publicação',
+          session!.email
+        )
+        await saveKanbanCard(projectId, published)
+        queryClient.setQueryData(['kanban', projectId], (prev: KanbanCard[] = []) =>
+          prev.map(c => c.id === published.id ? published : c)
+        )
+        setDialogOpen(false)
+        toast({ title: 'Card movido para Publicação (data atingida)' })
+        setSaving(false)
+        return
       }
 
       setDialogOpen(false)
