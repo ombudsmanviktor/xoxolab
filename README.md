@@ -49,7 +49,7 @@ Um quadro de recados colaborativo organizado como uma Matriz Eisenhower, para pr
 
 ### 3. Pautas
 
-Lista de ideias editoriais organizada por seções temáticas, com suporte a drag-and-drop. Cada pauta pode ser encaminhada diretamente para o módulo Conteúdos com um clique.
+Lista de ideias editoriais organizada por seções temáticas, com suporte a drag-and-drop. As pautas funcionam como propostas a serem avaliadas pela equipe editorial. É possível organizar as pautas em diferentes seções e atribuir tags a elas, a fim de organizar suas ideias. Caso entrem em produção, as pautas podem ser encaminhadas diretamente para o módulo Conteúdos com um único clique.
 
 ![Pautas](screenshots/03-pautas.png)
 
@@ -63,9 +63,9 @@ Lista de ideias editoriais organizada por seções temáticas, com suporte a dra
 
 ### 4. Conteúdos
 
-Visão geral de todos os conteúdos em produção, no formato de tabela estilo roadmap/bug tracker. Recebe pautas encaminhadas do módulo Pautas e envia itens concluídos automaticamente para o Kanban.
+Visão geral de todos os conteúdos em produção. O módulo Conteúdos é um controle geral de fluxo de produção, em que o editor ou a editora têm um panorama sobre em que pautas a equipe está trabalhando no momento. A tabela de Conteúdos apresenta cada item em seu respectivo estágio de produção. Em formato que se assemelha a apps de roadmap ou bug tracker para desenvolvedores, o módulo recebe as ideias encaminhadas do módulo Pautas e envia itens concluídos automaticamente para o Kanban.
 
-![Conteúdos](screenshots/04-conteudos.png)
+![Conteúdos](screenshots/04b-conteudos.png)
 
 - **Tabela editável inline** com as colunas: Descrição, Atribuição, Prazo, Tipo, Importância, Dependência, Progresso, Criado em
 - **Atribuição e Dependência**: seletor com autocompletar por @, exibe avatar colorido + nome do colaborador; dispara notificação por e-mail ao usuário marcado
@@ -78,7 +78,7 @@ Visão geral de todos os conteúdos em produção, no formato de tabela estilo r
 
 ### 5. Kanban
 
-Quadro de gestão de conteúdo por etapas com timeline visual. Recebe cards do módulo Conteúdos e organiza o fluxo editorial em cinco colunas. Sincroniza com Efemérides para exibir datas relevantes na linha do tempo.
+Quadro de gestão de conteúdo por etapas com timeline visual. Após a produção do conteúdo, o Kanban funciona para gerenciar a divulgação em plataformas digitais de mídias sociais. Organizado em cinco colunas (Planejamento, Criação, Revisão/Aprovação, Agendamento e Publicação), o módulo recebe os conteúdos produzidos e planeja sua divulgação nas redes, permitindo atribuição de funções a membros da equipe, agendamento para publicação futura, e sincronização com Efemérides importantes através do controle da linha do tempo.
 
 ![Kanban](screenshots/05-kanban.png)
 
