@@ -1,6 +1,6 @@
 # :pencil2: xoxoLAB
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.19305547.svg)](https://doi.org/10.5281/zenodo.19305547)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.19324592.svg)](https://doi.org/10.5281/zenodo.19324592)
 
 O xoxoLAB é uma ferramenta web de gestão editorial colaborativa que reúne em uma única interface nove instrumentos de trabalho para equipes de comunicação e mídias sociais: quadro de avisos, pautas, conteúdos, kanban, efemérides, políticas, recursos, equipe e senhas, todos conectados por um sistema de @menções que notifica colaboradores em tempo real. Os dados são armazenados diretamente no repositório GitHub privado da própria equipe, sem servidor intermediário, e múltiplos projetos podem ser gerenciados simultaneamente por diferentes grupos de colaboradores, cada um com seu próprio espaço isolado de trabalho.
 
