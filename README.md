@@ -2,7 +2,7 @@
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.19305547.svg)](https://doi.org/10.5281/zenodo.19305547)
 
-O xoxoLAB é uma ferramenta web de gestão editorial colaborativa que reúne em uma única interface oito instrumentos de trabalho para equipes de comunicação e mídias sociais: quadro de avisos, pautas, kanban, efemérides, políticas, recursos, equipe e senhas, todos conectados por um sistema de @menções que notifica colaboradores em tempo real. Os dados são armazenados diretamente no repositório GitHub privado da própria equipe, sem servidor intermediário, e múltiplos projetos podem ser gerenciados simultaneamente por diferentes grupos de colaboradores, cada um com seu próprio espaço isolado de trabalho.
+O xoxoLAB é uma ferramenta web de gestão editorial colaborativa que reúne em uma única interface nove instrumentos de trabalho para equipes de comunicação e mídias sociais: quadro de avisos, pautas, conteúdos, kanban, efemérides, políticas, recursos, equipe e senhas, todos conectados por um sistema de @menções que notifica colaboradores em tempo real. Os dados são armazenados diretamente no repositório GitHub privado da própria equipe, sem servidor intermediário, e múltiplos projetos podem ser gerenciados simultaneamente por diferentes grupos de colaboradores, cada um com seu próprio espaço isolado de trabalho.
 
 <img src="screenshots/ombudsman-logo.png" alt="Desenvolvido por Viktor Chagas" align="right" width="100">O software foi desenvolvido por [Viktor Chagas](https://scholar.google.com/citations?user=F02DKoAAAAAJ&hl=en) e pelo [coLAB/UFF](http://colab-uff.github.io), com auxílio do Claude Code Sonnet 4.6 para as tarefas de programação. Os autores agradecem a Rafael Cardoso Sampaio pelos comentários e sugestões de adoção de ferramentas de IA, que levaram ao planejamento inicial da aplicação.
 
@@ -20,14 +20,14 @@ Toda a persistência de dados ocorre diretamente em um repositório GitHub priva
 
 ### 1. Gestão de Projetos
 
-O xoxoLAB permite gerenciar várias contas e projetos simultaneamente. Assim, equipes de produção de conteúdo para as mídias sociais podem gerenciar várias páginas e perfis em um único ambiente. Ao efetuar o login no software, é preciso indicar um email, que funcionará como nome de usuário. As equipes podem atribuir tarefas e notificar usuários por meio de um sistema de menções (@).
+O xoxoLAB permite gerenciar várias contas e projetos simultaneamente. Assim, equipes de produção de conteúdo para as mídias sociais podem gerenciar várias páginas e perfis em um único ambiente. Ao efetuar o login no software, é preciso indicar um email, que funcionará como nome de usuário. As equipes podem atribuir tarefas e notificar usuários por meio de um sistema de menções (@). Disponível também em **modo demonstração**, sem necessidade de conta GitHub.
 
 ![Login](screenshots/00-login.png)
 
 #### Como usar
 
 1. Acesse a aplicação
-2. Informe seu **email** e as demais credenciais de acesso
+2. Informe seu **email** e as demais credenciais de acesso (ou use o Modo demonstração)
 3. Crie ou acesse um projeto e convide colaboradores pelos seus emails
 
 Os dados ficam inteiramente no seu repositório GitHub privado.
@@ -49,7 +49,7 @@ Um quadro de recados colaborativo organizado como uma Matriz Eisenhower, para pr
 
 ### 3. Pautas
 
-Listas organizada por seções temáticas, com suporte a drag-and-drop. Utilize para definir ideias para pautas a serem elaboradas.
+Lista de ideias editoriais organizada por seções temáticas, com suporte a drag-and-drop. Cada pauta pode ser encaminhada diretamente para o módulo Conteúdos com um clique.
 
 ![Pautas](screenshots/03-pautas.png)
 
@@ -57,45 +57,62 @@ Listas organizada por seções temáticas, com suporte a drag-and-drop. Utilize 
 - Itens com título, corpo em Markdown, tags coloridas, data, responsável e @menções
 - Reordenação de itens por DnD dentro e entre seções
 - Quick-add por Enter direto na lista
-- Sincronização com Kanban: itens de Pauta aparecem automaticamente na coluna "Pautas" do Kanban
+- Botão **"Encaminhar para Conteúdos"** (ícone →) em cada item envia a pauta ao módulo Conteúdos
 - **Export**: PDF, Excel, CSV, Markdown
 
 
-### 4. Kanban
+### 4. Conteúdos
 
-Quadro de gestão de conteúdo por etapas com timeline visual. O Kanban de xoxoLAB possui 6 colunas (Pautas, Em Construção, Em Revisão, Aguardando Aprovação, Divulgação, e Finalizadas), sendo duas colunas ocultas por padrão (Pautas e Finalizadas). O módulo sincroniza automaticamente com as ideias inseridas no módulo de Lista de Pautas e com as datas inseridas no módulo Efemérides. Uma Linha do Tempo permite visualizar de forma abrangente os prazos e efemérides próximos.
+Visão geral de todos os conteúdos em produção, no formato de tabela estilo roadmap/bug tracker. Recebe pautas encaminhadas do módulo Pautas e envia itens concluídos automaticamente para o Kanban.
 
-![Kanban](screenshots/04-kanban.png)
+![Conteúdos](screenshots/04-conteudos.png)
 
-- **6 colunas**: Pautas · Em Construção · Em Revisão · Aguardando Aprovação · Divulgação · Finalizadas
-- Colunas "Pautas" e "Finalizadas" retráteis; demais sempre visíveis
-- Cards com: título, descrição Markdown, prioridade, plataformas de publicação, responsável, prazo, imagens/vídeos
-- Contorno `border-l-4` colorido pela plataforma primária do card
+- **Tabela editável inline** com as colunas: Descrição, Atribuição, Prazo, Tipo, Importância, Dependência, Progresso, Criado em
+- **Atribuição e Dependência**: seletor com autocompletar por @, exibe avatar colorido + nome do colaborador; dispara notificação por e-mail ao usuário marcado
+- **Tipos customizáveis**: o usuário define sua própria lista de tipos de conteúdo (Artigo, Resenha etc.) via "Gerenciar Tipos"
+- **Importância**: pílulas Urgente · Alta · Média · Baixa
+- **Progresso**: seletor cíclico clicável — Aguardando na Fila → Em Produção → Em Revisão → Aguardando Aprovação → Atrasado → Pronto
+- Ao marcar como **Pronto**, o item migra automaticamente para o Kanban (coluna Planejamento) e vai ao final da lista (ocultável); reverter o status remove o card do Kanban
+- Ordenação por qualquer coluna; padrão por data de criação
+
+
+### 5. Kanban
+
+Quadro de gestão de conteúdo por etapas com timeline visual. Recebe cards do módulo Conteúdos e organiza o fluxo editorial em cinco colunas. Sincroniza com Efemérides para exibir datas relevantes na linha do tempo.
+
+![Kanban](screenshots/05-kanban.png)
+
+- **5 colunas**: Planejamento · Criação · Revisão/Aprovação · Agendamento · Publicação (oculta por padrão)
+- Cards com: título, descrição Markdown, plataformas de publicação, responsável, revisor, previsão de publicação e data de agendamento
+- **Pendências automáticas**: pílula PENDENTE em Agendamento sem data; pílula PENDENTE em Revisão/Aprovação sem revisor
+- **Agendamento automático**: quando a data de agendamento é atingida, o card migra para Publicação; arrastar de Publicação de volta apaga a data de agendamento
+- Cards com imagens/vídeos anexados via drag-and-drop ou botão de upload; thumbnails exibidos no card e na interface de edição
 - Log de auditoria por card (ações timestampadas: criação, movimentação, atribuição, edição)
-- Botão de compartilhamento direto nas plataformas configuradas
-- **Timeline** acima do quadro: chips coloridos por plataforma, sincronizada com a largura do board, zoom in/out
-- **Export**: PDF da timeline (retrato), PNG/PDF/Excel/CSV/Markdown do board
+- **Download individual de card**: Markdown, DOCX ou ZIP (inclui mídia anexada); exporta apenas título e texto
+- **Timeline** acima do quadro: chips coloridos por plataforma, zoom in/out, sincronizada com a largura do board
+- **Export**: PNG/PDF/Excel/CSV/Markdown do board
 
 
-### 5. Efemérides
+### 6. Efemérides
 
-Calendário de eventos importantes, datas comemorativas e lembretes. O módulo pode importar eventos por meio de arquivos ICS (Google Calendar, Apple Calendar) ou sincronizar diretamente com a agenda online do Google Calendar.
+Calendário de eventos importantes, datas comemorativas e lembretes. Importa arquivos ICS ou sincroniza diretamente com o Google Calendar.
 
-![Efemérides](screenshots/05-efemerides.png)
+![Efemérides](screenshots/06-efemerides.png)
 
 - Grid mensal React puro (sem biblioteca de calendário externa), navegação por meses
 - Eventos manuais com recorrência: anual, mensal, semanal, sem recorrência
-- **Eventos sintéticos** (faded, não editáveis): itens de Pautas com prazo e cards de Kanban com prazo aparecem automaticamente no calendário
+- **Eventos sintéticos** (faded, não editáveis): cards de Kanban com prazo aparecem automaticamente no calendário
 - Lembretes automáticos por e-mail (EmailJS) com 7 e 1 dia de antecedência
-- **Import**: arquivos `.ics` (Google Calendar, Apple Calendar etc.)
+- **Import ICS**: importação em lote com deduplicação automática e desfazer por lote; "Limpar tudo" com confirmação
+- **Google Calendar**: conexão via OAuth 2.0, token persistido em localStorage com renovação silenciosa
 - **Export**: `.ics`, Markdown
 
 
-### 6. Políticas
+### 7. Políticas
 
 Wiki editorial da equipe com documentos de políticas de gestão de conteúdos, manual de redação, entre outros.
 
-![Políticas](screenshots/06-politicas.png)
+![Políticas](screenshots/07-politicas.png)
 
 - Lista de documentos com título e corpo em Markdown (editor com preview)
 - Criação, edição e exclusão de políticas
@@ -103,36 +120,37 @@ Wiki editorial da equipe com documentos de políticas de gestão de conteúdos, 
 - **Exportar Tudo**: gera PDF, DOCX ou Markdown com todos os documentos concatenados
 
 
-### 7. Recursos
+### 8. Recursos
 
 Central de links úteis, documentação e arquivos de template. Armazene aqui logomarcas, arquivos vetoriais de ilustrações, e mais.
 
-![Recursos](screenshots/07-recursos.png)
+![Recursos](screenshots/08-recursos.png)
 
 - **Aba Links**: lista de recursos externos com título, URL, descrição e categoria; auto-fetch do título da página
-- **Aba Templates**: upload de arquivos para o repositório GitHub (`recursos/templates/`); download direto; aviso para arquivos >50MB
+- **Aba Templates**: upload de arquivos para o repositório GitHub (`recursos/templates/`); download autenticado via GitHub API; aviso para arquivos >50MB
 - Ordenação e organização por categorias
 
 
-### 8. Equipe
+### 9. Equipe
 
-Visão consolidada das atribuições e menções por colaborador.
+Visão consolidada das atribuições e menções por colaborador. Exibe também tarefas atribuídas via Conteúdos.
 
-![Equipe](screenshots/08-equipe.png)
+![Equipe](screenshots/09-equipe.png)
 
 - Lista todos os membros do projeto (cadastrados no `meta.yaml`)
-- Para cada membro: avatar com iniciais, lista de @menções em Avisos/Pautas/Kanban/Políticas e atribuições no Kanban
+- Para cada membro: avatar com iniciais colorido, lista de @menções em Avisos/Pautas/Kanban/Políticas, atribuições no Kanban e dependências em Conteúdos
 - Calculado em runtime via `useMemo` (sem storage próprio)
 
 
-### 9. Senhas
+### 10. Senhas
 
 Cofre de credenciais armazenadas no repositório GitHub privado.
 
-![Senhas](screenshots/09-senhas.png)
+![Senhas](screenshots/10-senhas.png)
 
 - Tabela com linhas expansíveis (serviço pai + múltiplas contas filho)
 - Colunas: plataforma, serviço, URL, login, senha (oculta por padrão com toggle), notas
+- Suporte a plataformas customizadas ("Outra…") com campo de texto livre
 - Adição e edição inline ou via dialog
 - Armazenado em `senhas/senhas.yaml` no repositório privado da equipe
 - **Sem exportação** (por segurança)
@@ -149,6 +167,7 @@ projects/
     meta.yaml               # name, createdBy, users: [email...]
     avisos/{card-id}.yaml
     pautas/pautas.yaml      # { sections, items, tags }
+    conteudos/conteudos.yaml # { items, types }
     kanban/{card-id}.yaml
     efemerides/eventos.yaml
     politicas/{policy-id}.yaml
@@ -299,12 +318,13 @@ A integração é opcional e requer um Client ID OAuth do Google Cloud. Siga os 
 | Módulo | Descrição |
 |---|---|
 | **Quadro de Avisos** | Matriz Eisenhower para priorização de avisos por iminência e empenho |
-| **Pautas** | Lista de pautas por seções com DnD, tags e datas |
-| **Kanban** | Quadro de conteúdo com timeline, plataformas e log de auditoria |
-| **Efemérides** | Calendário com recorrências, importação .ics e Google Calendar |
+| **Pautas** | Lista de ideias editoriais por seções com DnD, encaminhamento para Conteúdos |
+| **Conteúdos** | Tabela-roadmap de conteúdos em produção; integra Pautas → Kanban |
+| **Kanban** | Quadro editorial com 5 colunas, agendamento automático, mídia e timeline |
+| **Efemérides** | Calendário com recorrências, import ICS com undo e Google Calendar |
 | **Políticas** | Wiki editorial com exportação em PDF, DOCX e Markdown |
 | **Recursos** | Links úteis, documentação e templates de arquivos |
-| **Equipe** | Visão consolidada de atribuições por colaborador |
+| **Equipe** | Visão consolidada de atribuições e menções por colaborador |
 | **Senhas** | Cofre de credenciais armazenadas no repositório privado |
 
 ---
