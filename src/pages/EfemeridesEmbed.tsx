@@ -67,10 +67,13 @@ async function fetchEventos(owner: string, repo: string, branch: string, project
 
   const url = `https://api.github.com/repos/${owner}/${repo}/contents/projects/${projectId}/efemerides/eventos.yaml?ref=${branch}`
   const res = await fetch(url, { headers })
-  if (!res.ok) {
-    if (res.status === 404) return []
-    throw new Error(`GitHub API: ${res.status}`)
-  }
+
+  if (res.status === 404) return [] // file not yet created — no events
+  if (res.status === 401 || res.status === 403)
+    throw new Error(`Acesso negado (${res.status}). Verifique se o token tem permissão de leitura para o repositório "${owner}/${repo}".`)
+  if (!res.ok)
+    throw new Error(`Erro ao acessar repositório "${owner}/${repo}" (HTTP ${res.status}).`)
+
   const data = await res.json() as { content: string; encoding: string }
   if (data.encoding !== 'base64') throw new Error('Encoding inesperado')
   const decoded = atob(data.content.replace(/\n/g, ''))
@@ -182,9 +185,11 @@ export function EfemeridesEmbed() {
         )}
 
         {error && (
-          <div className="flex items-center justify-center gap-2 py-16 text-sm text-red-400">
-            <AlertCircle className="w-4 h-4" />
-            Não foi possível carregar os eventos. Abra o xoxoLAB na mesma sessão do navegador para autorizar o acesso ao repositório.
+          <div className="flex flex-col items-center justify-center gap-2 py-10 px-4 text-sm text-red-500">
+            <AlertCircle className="w-5 h-5 flex-shrink-0" />
+            <p className="text-center text-xs leading-relaxed">
+              {(error as Error).message || 'Erro ao carregar eventos.'}
+            </p>
           </div>
         )}
 
