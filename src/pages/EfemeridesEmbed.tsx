@@ -49,9 +49,25 @@ function expandRecurring(evento: Evento, monthDate: Date): string[] {
   return dates
 }
 
-async function fetchPublicEventos(owner: string, repo: string, branch: string, projectId: string): Promise<Evento[]> {
+// Read token from localStorage (same origin as main app — works even inside an iframe)
+function getSavedGitHubToken(): string | null {
+  try {
+    const raw = localStorage.getItem('xoxolab_github_config')
+    if (!raw) return null
+    const cfg = JSON.parse(raw) as { token?: string }
+    return cfg.token ?? null
+  } catch {
+    return null
+  }
+}
+
+async function fetchEventos(owner: string, repo: string, branch: string, projectId: string): Promise<Evento[]> {
+  const token = getSavedGitHubToken()
+  const headers: Record<string, string> = { Accept: 'application/vnd.github+json' }
+  if (token) headers['Authorization'] = `Bearer ${token}`
+
   const url = `https://api.github.com/repos/${owner}/${repo}/contents/projects/${projectId}/efemerides/eventos.yaml?ref=${branch}`
-  const res = await fetch(url, { headers: { Accept: 'application/vnd.github+json' } })
+  const res = await fetch(url, { headers })
   if (!res.ok) {
     if (res.status === 404) return []
     throw new Error(`GitHub API: ${res.status}`)
@@ -88,7 +104,7 @@ export function EfemeridesEmbed() {
 
   const { data: eventos = [], isLoading, error } = useQuery({
     queryKey: ['embed-eventos', owner, repo, branch, projectId],
-    queryFn: () => fetchPublicEventos(owner, repo, branch, projectId),
+    queryFn: () => fetchEventos(owner, repo, branch, projectId),
     enabled: !!(owner && repo && projectId),
     staleTime: 1000 * 60 * 5,
   })
@@ -158,7 +174,7 @@ export function EfemeridesEmbed() {
         {error && (
           <div className="flex items-center justify-center gap-2 py-16 text-sm text-red-400">
             <AlertCircle className="w-4 h-4" />
-            Não foi possível carregar os eventos. Verifique se o repositório é público.
+            Não foi possível carregar os eventos. Abra o xoxoLAB na mesma sessão do navegador para autorizar o acesso ao repositório.
           </div>
         )}
 
