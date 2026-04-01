@@ -5,8 +5,9 @@ import {
   getDay, isSameMonth, isToday, parseISO, addMonths, subMonths,
 } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
-import { ChevronLeft, ChevronRight, Plus, Repeat, Download, X, ExternalLink, Upload, CalendarDays, Link2Off, Info } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Plus, Repeat, Download, X, ExternalLink, Upload, CalendarDays, Link2Off, Info, Code2, Copy, Check } from 'lucide-react'
 import { useProject } from '@/contexts/ProjectContext'
+import { useAuth } from '@/contexts/AuthContext'
 import { loadEventos, saveEventos, loadPautas, loadKanbanCards } from '@/lib/storage'
 import { generateId, formatDate, todayISO } from '@/lib/utils'
 import {
@@ -77,10 +78,12 @@ function expandRecurring(evento: Evento, monthDate: Date): string[] {
 
 export function Efemerides() {
   const { projectId } = useProject()
+  const { session } = useAuth()
   const queryClient = useQueryClient()
   const { toasts, toast, dismiss } = useToast()
 
   const [currentMonth, setCurrentMonth] = useState(new Date())
+  const [embedCopied, setEmbedCopied] = useState(false)
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editEvento, setEditEvento] = useState<Evento | null>(null)
   const [selectedDate, setSelectedDate] = useState('')
@@ -209,6 +212,21 @@ export function Efemerides() {
     }
     return map
   }, [allEventos, currentMonth])
+
+  const iframeCode = useMemo(() => {
+    const cfg = session?.githubConfig
+    if (!cfg) return ''
+    const base = window.location.origin + window.location.pathname
+    const src = `${base}#/embed/efemerides?owner=${cfg.owner}&repo=${cfg.repo}&branch=${cfg.branch}&projectId=${projectId}`
+    return `<iframe src="${src}" width="800" height="600" frameborder="0" style="border:none;border-radius:12px;" title="Calendário xoxoLAB" allowfullscreen></iframe>`
+  }, [session, projectId])
+
+  function copyEmbed() {
+    navigator.clipboard.writeText(iframeCode).then(() => {
+      setEmbedCopied(true)
+      setTimeout(() => setEmbedCopied(false), 2000)
+    })
+  }
 
   async function handleImportICS(file: File) {
     const text = await file.text()
@@ -613,6 +631,33 @@ export function Efemerides() {
           <p className="text-sm text-gray-400 italic text-center py-4">Nenhum evento este mês</p>
         )}
       </div>
+
+      {/* Embed code — collapsible */}
+      <details className="group border border-gray-100 rounded-xl overflow-hidden">
+        <summary className="flex items-center gap-2 px-4 py-2.5 cursor-pointer text-xs text-gray-400 hover:text-gray-600 select-none [list-style:none] [&::-webkit-details-marker]:hidden">
+          <Code2 className="w-3.5 h-3.5 flex-shrink-0" />
+          <span>Incorporar calendário</span>
+          <ChevronRight className="w-3.5 h-3.5 ml-auto group-open:rotate-90 transition-transform" />
+        </summary>
+        <div className="px-4 pb-4 pt-2 space-y-3 bg-gray-50 border-t border-gray-100">
+          <p className="text-xs text-gray-500">
+            Cole o código abaixo em qualquer página HTML para exibir este calendário publicamente.{' '}
+            <strong>O repositório GitHub do projeto precisa ser público.</strong>
+          </p>
+          <div className="relative">
+            <pre className="text-[11px] bg-white border border-gray-200 rounded-lg p-3 pr-10 overflow-x-auto text-gray-700 leading-relaxed whitespace-pre-wrap break-all">
+              {iframeCode}
+            </pre>
+            <button
+              onClick={copyEmbed}
+              title="Copiar código"
+              className="absolute top-2 right-2 p-1.5 rounded-md hover:bg-gray-100 text-gray-400 hover:text-gray-700 transition-colors"
+            >
+              {embedCopied ? <Check className="w-3.5 h-3.5 text-green-600" /> : <Copy className="w-3.5 h-3.5" />}
+            </button>
+          </div>
+        </div>
+      </details>
 
       {/* Event dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>

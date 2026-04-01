@@ -16,6 +16,7 @@ import { Politicas } from '@/pages/Politicas'
 import { Recursos } from '@/pages/Recursos'
 import { Equipe } from '@/pages/Equipe'
 import { Senhas } from '@/pages/Senhas'
+import { EfemeridesEmbed } from '@/pages/EfemeridesEmbed'
 import { NotFound } from '@/pages/NotFound'
 
 const queryClient = new QueryClient({
@@ -31,6 +32,7 @@ export default function App() {
         <HashRouter>
           <Routes>
             <Route path="/login" element={<Login />} />
+            <Route path="/embed/efemerides" element={<EfemeridesEmbed />} />
             <Route
               element={
                 <ProtectedRoute>
