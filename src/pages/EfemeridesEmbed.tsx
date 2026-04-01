@@ -63,12 +63,26 @@ async function fetchPublicEventos(owner: string, repo: string, branch: string, p
   return parsed?.eventos ?? []
 }
 
+// Parse search params from hash directly — more reliable in iframe/embed contexts
+// where React Router's useSearchParams may not capture hash-embedded query strings
+function parseHashParams(): URLSearchParams {
+  const hash = window.location.hash ?? ''
+  const qIdx = hash.indexOf('?')
+  return new URLSearchParams(qIdx >= 0 ? hash.slice(qIdx + 1) : '')
+}
+
 export function EfemeridesEmbed() {
-  const [params] = useSearchParams()
-  const owner     = params.get('owner') ?? ''
-  const repo      = params.get('repo') ?? ''
-  const branch    = params.get('branch') ?? 'main'
-  const projectId = params.get('projectId') ?? ''
+  const [routerParams] = useSearchParams()
+
+  // Prefer React Router params; fall back to direct hash parsing
+  const hashParams = useMemo(() => parseHashParams(), [])
+  const get = (key: string) =>
+    routerParams.get(key) || hashParams.get(key) || ''
+
+  const owner     = get('owner')
+  const repo      = get('repo')
+  const branch    = get('branch') || 'main'
+  const projectId = get('projectId')
 
   const [currentMonth, setCurrentMonth] = useState(new Date())
 
