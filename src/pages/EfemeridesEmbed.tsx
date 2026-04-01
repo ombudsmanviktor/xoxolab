@@ -61,8 +61,7 @@ function getSavedGitHubToken(): string | null {
   }
 }
 
-async function fetchEventos(owner: string, repo: string, branch: string, projectId: string): Promise<Evento[]> {
-  const token = getSavedGitHubToken()
+async function fetchEventos(owner: string, repo: string, branch: string, projectId: string, token?: string): Promise<Evento[]> {
   const headers: Record<string, string> = { Accept: 'application/vnd.github+json' }
   if (token) headers['Authorization'] = `Bearer ${token}`
 
@@ -99,12 +98,15 @@ export function EfemeridesEmbed() {
   const repo      = get('repo')
   const branch    = get('branch') || 'main'
   const projectId = get('projectId')
+  // Token from URL takes priority (public embeds); localStorage is the fallback (same-browser)
+  const urlToken  = get('token')
+  const token     = urlToken || getSavedGitHubToken() || ''
 
   const [currentMonth, setCurrentMonth] = useState(new Date())
 
   const { data: eventos = [], isLoading, error } = useQuery({
-    queryKey: ['embed-eventos', owner, repo, branch, projectId],
-    queryFn: () => fetchEventos(owner, repo, branch, projectId),
+    queryKey: ['embed-eventos', owner, repo, branch, projectId, !!token],
+    queryFn: () => fetchEventos(owner, repo, branch, projectId, token),
     enabled: !!(owner && repo && projectId),
     staleTime: 1000 * 60 * 5,
   })

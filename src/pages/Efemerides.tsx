@@ -84,6 +84,7 @@ export function Efemerides() {
 
   const [currentMonth, setCurrentMonth] = useState(new Date())
   const [embedCopied, setEmbedCopied] = useState(false)
+  const [embedToken, setEmbedToken] = useState('')
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editEvento, setEditEvento] = useState<Evento | null>(null)
   const [selectedDate, setSelectedDate] = useState('')
@@ -217,9 +218,10 @@ export function Efemerides() {
     const cfg = session?.githubConfig
     if (!cfg) return ''
     const base = window.location.origin + window.location.pathname
-    const src = `${base}#/embed/efemerides?owner=${cfg.owner}&repo=${cfg.repo}&branch=${cfg.branch}&projectId=${projectId}`
+    let src = `${base}#/embed/efemerides?owner=${cfg.owner}&repo=${cfg.repo}&branch=${cfg.branch}&projectId=${projectId}`
+    if (embedToken.trim()) src += `&token=${encodeURIComponent(embedToken.trim())}`
     return `<iframe src="${src}" width="800" height="600" frameborder="0" style="border:none;border-radius:12px;" title="Calendário xoxoLAB" allowfullscreen></iframe>`
-  }, [session, projectId])
+  }, [session, projectId, embedToken])
 
   function copyEmbed() {
     navigator.clipboard.writeText(iframeCode).then(() => {
@@ -641,9 +643,28 @@ export function Efemerides() {
         </summary>
         <div className="px-4 pb-4 pt-2 space-y-3 bg-gray-50 border-t border-gray-100">
           <p className="text-xs text-gray-500">
-            Cole o código abaixo em qualquer página HTML para exibir este calendário publicamente.{' '}
-            <strong>O repositório GitHub do projeto precisa ser público.</strong>
+            Cole o código abaixo em qualquer página HTML para exibir este calendário.
           </p>
+
+          {/* Token input for public embeds */}
+          <div className="space-y-1">
+            <label className="text-xs font-medium text-gray-600">
+              Token de acesso de leitura{' '}
+              <span className="font-normal text-gray-400">(opcional — necessário para repositórios privados)</span>
+            </label>
+            <Input
+              value={embedToken}
+              onChange={e => setEmbedToken(e.target.value)}
+              placeholder="ghp_xxxxxxxxxxxxxxxxxxxx"
+              className="text-xs font-mono h-8"
+            />
+            <p className="text-[11px] text-gray-400 leading-relaxed">
+              Crie um{' '}
+              <strong>Fine-grained Personal Access Token</strong> no GitHub com permissão somente-leitura em <em>Repository contents</em>.
+              O token ficará visível na URL — use um token dedicado apenas para leitura deste repositório.
+            </p>
+          </div>
+
           <div className="relative">
             <pre className="text-[11px] bg-white border border-gray-200 rounded-lg p-3 pr-10 overflow-x-auto text-gray-700 leading-relaxed whitespace-pre-wrap break-all">
               {iframeCode}
