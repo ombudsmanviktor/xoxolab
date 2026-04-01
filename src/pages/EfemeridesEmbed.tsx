@@ -78,28 +78,30 @@ async function fetchEventos(owner: string, repo: string, branch: string, project
   return parsed?.eventos ?? []
 }
 
-// Parse search params from hash directly — more reliable in iframe/embed contexts
-// where React Router's useSearchParams may not capture hash-embedded query strings
-function parseHashParams(): URLSearchParams {
-  const hash = window.location.hash ?? ''
-  const qIdx = hash.indexOf('?')
-  return new URLSearchParams(qIdx >= 0 ? hash.slice(qIdx + 1) : '')
+// Read params from the real query string (before the #).
+// URL format: https://host/?owner=X&repo=Y&projectId=Z&token=T#/embed/efemerides
+// This is far more reliable than parsing hash-embedded params in iframe contexts.
+function getUrlParams(): URLSearchParams {
+  // window.location.search is the actual ?key=val before the #, always reliable
+  if (window.location.search) return new URLSearchParams(window.location.search)
+  // Fallback: try to extract query string from anywhere in the full URL
+  const href = window.location.href
+  const qIdx = href.lastIndexOf('?')
+  return new URLSearchParams(qIdx >= 0 ? href.slice(qIdx + 1).replace(/#.*$/, '') : '')
 }
 
 export function EfemeridesEmbed() {
-  const [routerParams] = useSearchParams()
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [_routerParams] = useSearchParams() // keep router happy
 
-  // Prefer React Router params; fall back to direct hash parsing
-  const hashParams = useMemo(() => parseHashParams(), [])
-  const get = (key: string) =>
-    routerParams.get(key) || hashParams.get(key) || ''
+  const params = useMemo(() => getUrlParams(), [])
 
-  const owner     = get('owner')
-  const repo      = get('repo')
-  const branch    = get('branch') || 'main'
-  const projectId = get('projectId')
+  const owner     = params.get('owner') ?? ''
+  const repo      = params.get('repo') ?? ''
+  const branch    = params.get('branch') ?? 'main'
+  const projectId = params.get('projectId') ?? ''
   // Token from URL takes priority (public embeds); localStorage is the fallback (same-browser)
-  const urlToken  = get('token')
+  const urlToken  = params.get('token') ?? ''
   const token     = urlToken || getSavedGitHubToken() || ''
 
   const [currentMonth, setCurrentMonth] = useState(new Date())
