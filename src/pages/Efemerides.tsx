@@ -648,41 +648,49 @@ export function Efemerides() {
           <ChevronRight className="w-3.5 h-3.5 ml-auto group-open:rotate-90 transition-transform" />
         </summary>
         <div className="px-4 pb-4 pt-2 space-y-3 bg-gray-50 border-t border-gray-100">
-          <p className="text-xs text-gray-500">
-            Cole o código abaixo em qualquer página HTML para exibir este calendário.
-          </p>
-
-          {/* Token input for public embeds */}
-          <div className="space-y-1">
-            <label className="text-xs font-medium text-gray-600">
-              Token de acesso de leitura{' '}
-              <span className="font-normal text-gray-400">(opcional — necessário para repositórios privados)</span>
-            </label>
-            <Input
-              value={embedToken}
-              onChange={e => setEmbedToken(e.target.value)}
-              placeholder="ghp_xxxxxxxxxxxxxxxxxxxx"
-              className="text-xs font-mono h-8"
-            />
-            <p className="text-[11px] text-gray-400 leading-relaxed">
-              Crie um{' '}
-              <strong>Fine-grained Personal Access Token</strong> no GitHub com permissão somente-leitura em <em>Repository contents</em>.
-              O token ficará visível na URL — use um token dedicado apenas para leitura deste repositório.
+          {(!session?.githubConfig?.owner || !session?.githubConfig?.repo) ? (
+            <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+              ⚠️ O embed requer login com uma conta GitHub real. No modo demo não há repositório para incorporar.
             </p>
-          </div>
+          ) : (
+            <>
+              <p className="text-xs text-gray-500">
+                Cole o código abaixo em qualquer página HTML para exibir este calendário.
+              </p>
 
-          <div className="relative">
-            <pre className="text-[11px] bg-white border border-gray-200 rounded-lg p-3 pr-10 overflow-x-auto text-gray-700 leading-relaxed whitespace-pre-wrap break-all">
-              {iframeCode}
-            </pre>
-            <button
-              onClick={copyEmbed}
-              title="Copiar código"
-              className="absolute top-2 right-2 p-1.5 rounded-md hover:bg-gray-100 text-gray-400 hover:text-gray-700 transition-colors"
-            >
-              {embedCopied ? <Check className="w-3.5 h-3.5 text-green-600" /> : <Copy className="w-3.5 h-3.5" />}
-            </button>
-          </div>
+              {/* Token input for public embeds */}
+              <div className="space-y-1">
+                <label className="text-xs font-medium text-gray-600">
+                  Token de acesso de leitura{' '}
+                  <span className="font-normal text-gray-400">(necessário para repositórios privados)</span>
+                </label>
+                <Input
+                  value={embedToken}
+                  onChange={e => setEmbedToken(e.target.value)}
+                  placeholder="ghp_xxxxxxxxxxxxxxxxxxxx"
+                  className="text-xs font-mono h-8"
+                />
+                <p className="text-[11px] text-gray-400 leading-relaxed">
+                  No GitHub: <em>Settings → Developer settings → Personal access tokens → Fine-grained</em>.
+                  Permissão: <strong>Repository contents → Read-only</strong>.
+                  O token ficará na URL — crie um exclusivo para leitura deste repositório.
+                </p>
+              </div>
+
+              <div className="relative">
+                <pre className="text-[11px] bg-white border border-gray-200 rounded-lg p-3 pr-10 overflow-x-auto text-gray-700 leading-relaxed whitespace-pre-wrap break-all">
+                  {iframeCode}
+                </pre>
+                <button
+                  onClick={copyEmbed}
+                  title="Copiar código"
+                  className="absolute top-2 right-2 p-1.5 rounded-md hover:bg-gray-100 text-gray-400 hover:text-gray-700 transition-colors"
+                >
+                  {embedCopied ? <Check className="w-3.5 h-3.5 text-green-600" /> : <Copy className="w-3.5 h-3.5" />}
+                </button>
+              </div>
+            </>
+          )}
         </div>
       </details>
 
