@@ -76,7 +76,10 @@ async function fetchEventos(owner: string, repo: string, branch: string, project
 
   const data = await res.json() as { content: string; encoding: string }
   if (data.encoding !== 'base64') throw new Error('Encoding inesperado')
-  const decoded = atob(data.content.replace(/\n/g, ''))
+  // Use TextDecoder to correctly handle UTF-8 multi-byte chars (accented Portuguese)
+  const binary = atob(data.content.replace(/\n/g, ''))
+  const bytes = Uint8Array.from(binary, c => c.charCodeAt(0))
+  const decoded = new TextDecoder('utf-8').decode(bytes)
   const parsed = yamlLoad(decoded) as { eventos?: Evento[] } | null
   return parsed?.eventos ?? []
 }
