@@ -78,18 +78,36 @@ async function fetchEventos(owner: string, repo: string, branch: string, project
   return parsed?.eventos ?? []
 }
 
-export function EfemeridesEmbed() {
-  // useParams() is the most reliable way to read data in React Router —
-  // works in all contexts including iframes
-  const {
-    owner     = '',
-    repo      = '',
-    branch    = 'main',
-    projectId = '',
-    token: urlToken = '',
-  } = useParams<{ owner: string; repo: string; branch: string; projectId: string; token?: string }>()
+interface EmbedParams {
+  owner: string
+  repo: string
+  branch: string
+  projectId: string
+  token?: string
+}
 
-  // Token from URL path takes priority; localStorage is the fallback (same-browser)
+function decodeEmbedData(data: string): EmbedParams | null {
+  try {
+    // URL-safe base64 → standard base64 with correct padding
+    const pad = data.length % 4
+    const b64 = data.replace(/-/g, '+').replace(/_/g, '/') + '='.repeat(pad ? 4 - pad : 0)
+    return JSON.parse(atob(b64)) as EmbedParams
+  } catch {
+    return null
+  }
+}
+
+export function EfemeridesEmbed() {
+  const { data = '' } = useParams<{ data: string }>()
+  const embed = useMemo(() => decodeEmbedData(data), [data])
+
+  const owner     = embed?.owner     ?? ''
+  const repo      = embed?.repo      ?? ''
+  const branch    = embed?.branch    ?? 'main'
+  const projectId = embed?.projectId ?? ''
+  const urlToken  = embed?.token     ?? ''
+
+  // Token from URL payload takes priority; localStorage is the fallback (same-browser)
   const token = urlToken || getSavedGitHubToken() || ''
 
   const [currentMonth, setCurrentMonth] = useState(new Date())

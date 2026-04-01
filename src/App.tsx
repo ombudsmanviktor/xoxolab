@@ -32,8 +32,7 @@ export default function App() {
         <HashRouter>
           <Routes>
             <Route path="/login" element={<Login />} />
-            <Route path="/embed/efemerides/:owner/:repo/:branch/:projectId" element={<EfemeridesEmbed />} />
-            <Route path="/embed/efemerides/:owner/:repo/:branch/:projectId/:token" element={<EfemeridesEmbed />} />
+            <Route path="/embed/efemerides/:data" element={<EfemeridesEmbed />} />
             <Route
               element={
                 <ProtectedRoute>
