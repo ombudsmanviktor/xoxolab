@@ -217,11 +217,12 @@ export function Efemerides() {
   const iframeCode = useMemo(() => {
     const cfg = session?.githubConfig
     if (!cfg) return ''
-    // Params go BEFORE the # so window.location.search reads them reliably in iframe contexts
+    // Params as path segments — useParams() is guaranteed to work in all iframe contexts
     const base = window.location.origin + window.location.pathname
-    let qs = `?owner=${encodeURIComponent(cfg.owner)}&repo=${encodeURIComponent(cfg.repo)}&branch=${encodeURIComponent(cfg.branch)}&projectId=${encodeURIComponent(projectId)}`
-    if (embedToken.trim()) qs += `&token=${encodeURIComponent(embedToken.trim())}`
-    const src = `${base}${qs}#/embed/efemerides`
+    const seg = [cfg.owner, cfg.repo, cfg.branch, projectId]
+      .map(s => encodeURIComponent(s)).join('/')
+    const tokenSeg = embedToken.trim() ? `/${encodeURIComponent(embedToken.trim())}` : ''
+    const src = `${base}#/embed/efemerides/${seg}${tokenSeg}`
     return `<iframe src="${src}" width="800" height="600" frameborder="0" style="border:none;border-radius:12px;" title="Calendário xoxoLAB" allowfullscreen></iframe>`
   }, [session, projectId, embedToken])
 

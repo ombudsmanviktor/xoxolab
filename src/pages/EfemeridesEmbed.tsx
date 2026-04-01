@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { useParams } from 'react-router-dom'
 import {
   format, startOfMonth, endOfMonth, eachDayOfInterval,
   getDay, isSameMonth, isToday, parseISO, addMonths, subMonths,
@@ -78,31 +78,19 @@ async function fetchEventos(owner: string, repo: string, branch: string, project
   return parsed?.eventos ?? []
 }
 
-// Read params from the real query string (before the #).
-// URL format: https://host/?owner=X&repo=Y&projectId=Z&token=T#/embed/efemerides
-// This is far more reliable than parsing hash-embedded params in iframe contexts.
-function getUrlParams(): URLSearchParams {
-  // window.location.search is the actual ?key=val before the #, always reliable
-  if (window.location.search) return new URLSearchParams(window.location.search)
-  // Fallback: try to extract query string from anywhere in the full URL
-  const href = window.location.href
-  const qIdx = href.lastIndexOf('?')
-  return new URLSearchParams(qIdx >= 0 ? href.slice(qIdx + 1).replace(/#.*$/, '') : '')
-}
-
 export function EfemeridesEmbed() {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [_routerParams] = useSearchParams() // keep router happy
+  // useParams() is the most reliable way to read data in React Router —
+  // works in all contexts including iframes
+  const {
+    owner     = '',
+    repo      = '',
+    branch    = 'main',
+    projectId = '',
+    token: urlToken = '',
+  } = useParams<{ owner: string; repo: string; branch: string; projectId: string; token?: string }>()
 
-  const params = useMemo(() => getUrlParams(), [])
-
-  const owner     = params.get('owner') ?? ''
-  const repo      = params.get('repo') ?? ''
-  const branch    = params.get('branch') ?? 'main'
-  const projectId = params.get('projectId') ?? ''
-  // Token from URL takes priority (public embeds); localStorage is the fallback (same-browser)
-  const urlToken  = params.get('token') ?? ''
-  const token     = urlToken || getSavedGitHubToken() || ''
+  // Token from URL path takes priority; localStorage is the fallback (same-browser)
+  const token = urlToken || getSavedGitHubToken() || ''
 
   const [currentMonth, setCurrentMonth] = useState(new Date())
 
