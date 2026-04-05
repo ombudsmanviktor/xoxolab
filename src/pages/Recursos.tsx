@@ -146,8 +146,8 @@ export function Recursos() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-xl font-bold text-gray-900">Recursos</h1>
-        <p className="text-sm text-gray-500 mt-0.5">Links úteis e arquivos de referência</p>
+        <h1 className="text-xl font-bold text-gray-900 dark:text-white">Recursos</h1>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Links úteis e arquivos de referência</p>
       </div>
 
       <Tabs defaultValue="recursos">
@@ -163,25 +163,25 @@ export function Recursos() {
 
           {data.recursos.length === 0 ? (
             <div className="text-center py-12">
-              <Link2 className="w-10 h-10 text-gray-200 mx-auto mb-3" />
-              <p className="text-gray-400">Nenhum recurso adicionado</p>
+              <Link2 className="w-10 h-10 text-gray-200 dark:text-gray-700 mx-auto mb-3" />
+              <p className="text-gray-400 dark:text-gray-500">Nenhum recurso adicionado</p>
             </div>
           ) : (
             <div className="space-y-2">
               {data.recursos.sort((a, b) => a.order - b.order).map(r => (
-                <div key={r.id} className="flex items-center gap-3 bg-white border border-gray-100 rounded-lg px-4 py-3 group hover:border-gray-200 transition-colors">
+                <div key={r.id} className="flex items-center gap-3 bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-lg px-4 py-3 group hover:border-gray-200 dark:hover:border-gray-600 transition-colors">
                   <Link2 className="w-4 h-4 text-emerald-500 flex-shrink-0" />
                   <div className="flex-1 min-w-0">
-                    <p className="font-medium text-gray-900 text-sm truncate">{r.title}</p>
+                    <p className="font-medium text-gray-900 dark:text-white text-sm truncate">{r.title}</p>
                     <a href={r.url} target="_blank" rel="noopener noreferrer" className="text-xs text-purple-600 hover:underline truncate block">{r.url}</a>
-                    {r.description && <p className="text-xs text-gray-400 mt-0.5">{r.description}</p>}
+                    {r.description && <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">{r.description}</p>}
                   </div>
-                  {r.category && <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full flex-shrink-0">{r.category}</span>}
+                  {r.category && <span className="text-xs bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 px-2 py-0.5 rounded-full flex-shrink-0">{r.category}</span>}
                   <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <a href={r.url} target="_blank" rel="noopener noreferrer" className="p-1 text-gray-400 hover:text-gray-600">
+                    <a href={r.url} target="_blank" rel="noopener noreferrer" className="p-1 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300">
                       <ExternalLink className="w-3.5 h-3.5" />
                     </a>
-                    <button onClick={() => openEdit(r)} className="p-1 text-gray-400 hover:text-gray-600">
+                    <button onClick={() => openEdit(r)} className="p-1 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300">
                       Editar
                     </button>
                   </div>
@@ -202,21 +202,21 @@ export function Recursos() {
 
           {data.templates.length === 0 ? (
             <div className="text-center py-12">
-              <File className="w-10 h-10 text-gray-200 mx-auto mb-3" />
-              <p className="text-gray-400">Nenhum template enviado</p>
+              <File className="w-10 h-10 text-gray-200 dark:text-gray-700 mx-auto mb-3" />
+              <p className="text-gray-400 dark:text-gray-500">Nenhum template enviado</p>
             </div>
           ) : (
             <div className="space-y-2">
               {data.templates.map(t => (
-                <div key={t.id} className="flex items-center gap-3 bg-white border border-gray-100 rounded-lg px-4 py-3 group hover:border-gray-200 transition-colors">
-                  <File className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                <div key={t.id} className="flex items-center gap-3 bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-lg px-4 py-3 group hover:border-gray-200 dark:hover:border-gray-600 transition-colors">
+                  <File className="w-4 h-4 text-gray-400 dark:text-gray-500 flex-shrink-0" />
                   <div className="flex-1 min-w-0">
-                    <p className="font-medium text-gray-900 text-sm truncate">{t.name}</p>
-                    <p className="text-xs text-gray-400">{formatSize(t.size)}</p>
+                    <p className="font-medium text-gray-900 dark:text-white text-sm truncate">{t.name}</p>
+                    <p className="text-xs text-gray-400 dark:text-gray-500">{formatSize(t.size)}</p>
                   </div>
                   <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                     {t.path && (
-                      <button onClick={() => handleDownloadTemplate(t.path, t.name, t.type)} className="p-1 text-gray-400 hover:text-gray-600" title="Baixar">
+                      <button onClick={() => handleDownloadTemplate(t.path, t.name, t.type)} className="p-1 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300" title="Baixar">
                         <Download className="w-3.5 h-3.5" />
                       </button>
                     )}

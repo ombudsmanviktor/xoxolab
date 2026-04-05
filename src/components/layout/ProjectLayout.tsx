@@ -89,7 +89,7 @@ export function ProjectLayout() {
   return (
     <ProjectProvider projectId={projectId} projectMeta={projectMeta ?? null}>
       <CalendarReminderChecker projectId={projectId} />
-      <div className="flex min-h-screen bg-gray-50 flex-col">
+      <div className="flex min-h-screen bg-gray-50 dark:bg-gray-950 flex-col">
         {isDemoMode && (
           <div className="flex items-center justify-center gap-2 bg-purple-600 text-white text-xs px-4 py-2 flex-shrink-0">
             <FlaskConical className="w-3.5 h-3.5" />
@@ -98,7 +98,8 @@ export function ProjectLayout() {
         )}
         <div className="flex flex-1 min-h-0">
           <ProjectSidebar />
-          <main className="flex-1 min-w-0 overflow-auto">
+          {/* pt-14 offsets the fixed mobile top bar; removed on lg+ */}
+          <main className="flex-1 min-w-0 overflow-auto pt-14 lg:pt-0">
             <div className="p-6 lg:p-8 max-w-7xl mx-auto">
               <Outlet />
             </div>

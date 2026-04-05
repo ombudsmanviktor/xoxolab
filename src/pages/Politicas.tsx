@@ -203,8 +203,8 @@ export function Politicas() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-bold text-gray-900">Políticas</h1>
-          <p className="text-sm text-gray-500 mt-0.5">Guias, manuais e documentação editorial</p>
+          <h1 className="text-xl font-bold text-gray-900 dark:text-white">Políticas</h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Guias, manuais e documentação editorial</p>
         </div>
         <div className="flex items-center gap-2">
           {politicas.length > 0 && (
@@ -214,7 +214,7 @@ export function Politicas() {
                 Exportar Tudo
               </Button>
               {exportOpen && (
-                <div className="absolute right-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-30 py-1 min-w-[150px]">
+                <div className="absolute right-0 top-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-30 py-1 min-w-[150px]">
                   {[
                     { label: 'PDF', fn: exportAllPDF },
                     { label: 'Word (DOCX)', fn: exportAllDOCX },
@@ -223,7 +223,7 @@ export function Politicas() {
                     <button
                       key={label}
                       onClick={() => { fn(); setExportOpen(false) }}
-                      className="w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 text-left transition-colors"
+                      className="w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 text-left transition-colors"
                     >
                       {label}
                     </button>
@@ -238,8 +238,8 @@ export function Politicas() {
 
       {politicas.length === 0 ? (
         <div className="text-center py-16">
-          <BookOpen className="w-10 h-10 text-gray-200 mx-auto mb-3" />
-          <p className="text-gray-400">Nenhuma política cadastrada</p>
+          <BookOpen className="w-10 h-10 text-gray-200 dark:text-gray-700 mx-auto mb-3" />
+          <p className="text-gray-400 dark:text-gray-500">Nenhuma política cadastrada</p>
           <Button className="mt-4" onClick={openNew}><Plus className="w-4 h-4" /> Criar</Button>
         </div>
       ) : (
@@ -264,11 +264,11 @@ export function Politicas() {
 
           <div className="space-y-4">
             {politicas.map(p => (
-              <div key={p.id} id={`pol-${p.id}`} className="bg-white border border-gray-200 rounded-xl shadow-sm scroll-mt-4">
-                <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+              <div key={p.id} id={`pol-${p.id}`} className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm scroll-mt-4">
+                <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-gray-700">
                   <div>
-                    <h3 className="font-semibold text-gray-900">{p.title}</h3>
-                    <p className="text-xs text-gray-400 mt-0.5">{formatDate(p.updatedAt)}</p>
+                    <h3 className="font-semibold text-gray-900 dark:text-white">{p.title}</h3>
+                    <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">{formatDate(p.updatedAt)}</p>
                   </div>
                   <div className="flex items-center gap-2">
                     <Button variant="ghost" size="icon" onClick={() => exportMarkdown(p)} title="Exportar Markdown">

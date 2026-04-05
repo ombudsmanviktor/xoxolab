@@ -67,7 +67,7 @@ function UserChip({ email, onClear }: { email: string; onClear?: () => void }) {
       <span className={cn('w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-bold flex-shrink-0', colors[idx])}>
         {initials}
       </span>
-      <span className="text-xs text-gray-700 truncate max-w-[90px]">{email.split('@')[0]}</span>
+      <span className="text-xs text-gray-700 dark:text-gray-200 truncate max-w-[90px]">{email.split('@')[0]}</span>
       {onClear && (
         <button onClick={onClear} className="text-gray-300 hover:text-red-400 flex-shrink-0">
           <X className="w-3 h-3" />
@@ -126,34 +126,34 @@ function UserPicker({
     <div
       ref={dropRef}
       style={{ position: 'absolute', top: pos.top, left: pos.left, width: pos.width, zIndex: 9999 }}
-      className="bg-white border border-gray-200 rounded-lg shadow-xl"
+      className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl"
     >
-      <div className="p-2 border-b border-gray-100">
+      <div className="p-2 border-b border-gray-100 dark:border-gray-700">
         <input
           autoFocus
           value={query}
           onChange={e => setQuery(e.target.value)}
           placeholder="@usuário..."
-          className="w-full text-xs outline-none placeholder:text-gray-300"
+          className="w-full text-xs outline-none placeholder:text-gray-300 dark:placeholder:text-gray-600 bg-transparent dark:text-white"
         />
       </div>
       <div className="max-h-48 overflow-y-auto py-1">
         <button
           onMouseDown={e => e.preventDefault()}
           onClick={() => { onChange(undefined); setOpen(false); setQuery('') }}
-          className="w-full px-3 py-1.5 text-xs text-gray-400 hover:bg-gray-50 text-left"
+          className="w-full px-3 py-1.5 text-xs text-gray-400 dark:text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-700 text-left"
         >
           Indefinido
         </button>
         {filtered.length === 0 && (
-          <p className="px-3 py-1.5 text-xs text-gray-400">Nenhum usuário encontrado</p>
+          <p className="px-3 py-1.5 text-xs text-gray-400 dark:text-gray-500">Nenhum usuário encontrado</p>
         )}
         {filtered.map(u => (
           <button
             key={u}
             onMouseDown={e => e.preventDefault()}
             onClick={() => { onChange(u); setOpen(false); setQuery('') }}
-            className="w-full px-3 py-1.5 text-xs hover:bg-violet-50 text-left flex items-center gap-2"
+            className="w-full px-3 py-1.5 text-xs hover:bg-violet-50 dark:hover:bg-violet-900/30 text-left flex items-center gap-2"
           >
             <UserChip email={u} />
           </button>
@@ -409,7 +409,7 @@ export function Conteudos() {
     const isEditingDesc = editingCell?.id === item.id && editingCell.col === 'descricao'
 
     return (
-      <tr key={item.id} className="border-b border-gray-50 hover:bg-gray-50/50 group">
+      <tr key={item.id} className="border-b border-gray-50 dark:border-gray-700 hover:bg-gray-50/50 dark:hover:bg-gray-700/50 group">
         {/* Descrição */}
         <td className="px-3 py-2 min-w-[180px] max-w-[260px]">
           <div className="flex items-center gap-1">
@@ -420,11 +420,11 @@ export function Conteudos() {
                 onChange={e => setCellValue(e.target.value)}
                 onBlur={() => commitEdit(item, 'descricao')}
                 onKeyDown={e => { if (e.key === 'Enter') commitEdit(item, 'descricao'); if (e.key === 'Escape') setEditingCell(null) }}
-                className="flex-1 text-sm text-gray-900 border-b border-violet-400 outline-none bg-transparent py-0.5"
+                className="flex-1 text-sm text-gray-900 dark:text-white border-b border-violet-400 outline-none bg-transparent py-0.5"
               />
             ) : (
               <span
-                className="flex-1 text-sm text-gray-900 cursor-text truncate"
+                className="flex-1 text-sm text-gray-900 dark:text-white cursor-text truncate"
                 onClick={() => startEdit(item, 'descricao', item.descricao)}
                 title={item.descricao}
               >
@@ -459,8 +459,8 @@ export function Conteudos() {
         <td className="px-3 py-2 min-w-[110px]">
           <div className="flex items-center gap-1">
             {item.prazo ? (
-              <span className="flex items-center gap-1 text-xs text-gray-600">
-                <Calendar className="w-3 h-3 text-gray-400" />
+              <span className="flex items-center gap-1 text-xs text-gray-600 dark:text-gray-300">
+                <Calendar className="w-3 h-3 text-gray-400 dark:text-gray-500" />
                 {formatDate(item.prazo)}
                 <button onClick={() => updateField(item, { prazo: undefined })} className="text-gray-300 hover:text-red-400">
                   <X className="w-3 h-3" />
@@ -483,7 +483,7 @@ export function Conteudos() {
           <select
             value={item.tipo ?? ''}
             onChange={e => updateField(item, { tipo: e.target.value || undefined })}
-            className="text-xs text-gray-600 border-0 outline-none bg-transparent cursor-pointer w-full"
+            className="text-xs text-gray-600 dark:text-gray-300 border-0 outline-none bg-transparent cursor-pointer w-full"
           >
             <option value="">Indefinido</option>
             {data.tipos.map(t => <option key={t} value={t}>{t}</option>)}
@@ -523,7 +523,7 @@ export function Conteudos() {
         </td>
 
         {/* Criado em */}
-        <td className="px-3 py-2 text-xs text-gray-400 whitespace-nowrap">
+        <td className="px-3 py-2 text-xs text-gray-400 dark:text-gray-500 whitespace-nowrap">
           {formatDate(item.createdAt.slice(0, 10))}
         </td>
 
@@ -561,8 +561,8 @@ export function Conteudos() {
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-2">
         <div>
-          <h1 className="text-xl font-bold text-gray-900">Conteúdos</h1>
-          <p className="text-sm text-gray-500 mt-0.5">Em Produção · {activeItems.length} ativo{activeItems.length !== 1 ? 's' : ''}</p>
+          <h1 className="text-xl font-bold text-gray-900 dark:text-white">Conteúdos</h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Em Produção · {activeItems.length} ativo{activeItems.length !== 1 ? 's' : ''}</p>
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" onClick={() => setTiposDialog(true)}>
@@ -577,15 +577,15 @@ export function Conteudos() {
       </div>
 
       {/* Table */}
-      <div className="overflow-x-auto rounded-xl border border-gray-100 bg-white shadow-sm">
+      <div className="overflow-x-auto rounded-xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-gray-100 bg-gray-50/50">
+            <tr className="border-b border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/50">
               {colHeaders.map(({ col, label }) => (
                 <th
                   key={label}
                   onClick={() => col && handleSort(col)}
-                  className={cn('px-3 py-2.5 text-left text-xs font-semibold text-gray-500 select-none whitespace-nowrap', col ? 'cursor-pointer hover:text-gray-900' : '')}
+                  className={cn('px-3 py-2.5 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 select-none whitespace-nowrap', col ? 'cursor-pointer hover:text-gray-900 dark:hover:text-white' : '')}
                 >
                   <span className="flex items-center gap-1">
                     {label}
@@ -621,7 +621,7 @@ export function Conteudos() {
 
             {activeItems.length === 0 && !addingNew && (
               <tr>
-                <td colSpan={9} className="px-3 py-8 text-center text-sm text-gray-400">
+                <td colSpan={9} className="px-3 py-8 text-center text-sm text-gray-400 dark:text-gray-500">
                   Nenhum conteúdo em produção. Clique em <strong>Novo Conteúdo</strong> ou encaminhe uma pauta.
                 </td>
               </tr>
@@ -635,13 +635,13 @@ export function Conteudos() {
         <div>
           <button
             onClick={() => setShowDone(v => !v)}
-            className="flex items-center gap-2 text-sm text-gray-400 hover:text-gray-600 transition-colors mb-2"
+            className="flex items-center gap-2 text-sm text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors mb-2"
           >
             {showDone ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
             {showDone ? 'Ocultar' : 'Mostrar'} concluídos ({doneItems.length})
           </button>
           {showDone && (
-            <div className="overflow-x-auto rounded-xl border border-gray-100 bg-white/50 shadow-sm opacity-70">
+            <div className="overflow-x-auto rounded-xl border border-gray-100 dark:border-gray-700 bg-white/50 dark:bg-gray-800/50 shadow-sm opacity-70">
               <table className="w-full text-sm">
                 <tbody>
                   {doneItems.map(item => renderRow(item))}
@@ -696,13 +696,13 @@ export function Conteudos() {
               </Button>
             </div>
             {data.tipos.length === 0 && (
-              <p className="text-xs text-gray-400 text-center py-2">Nenhum tipo definido ainda.</p>
+              <p className="text-xs text-gray-400 dark:text-gray-500 text-center py-2">Nenhum tipo definido ainda.</p>
             )}
             <div className="space-y-1">
               {data.tipos.map(t => (
-                <div key={t} className="flex items-center justify-between px-3 py-1.5 bg-gray-50 rounded-lg">
-                  <span className="text-sm text-gray-700 flex items-center gap-2">
-                    <Tag className="w-3.5 h-3.5 text-gray-400" />
+                <div key={t} className="flex items-center justify-between px-3 py-1.5 bg-gray-50 dark:bg-gray-900 rounded-lg">
+                  <span className="text-sm text-gray-700 dark:text-gray-200 flex items-center gap-2">
+                    <Tag className="w-3.5 h-3.5 text-gray-400 dark:text-gray-500" />
                     {t}
                   </span>
                   <button onClick={() => removeTipo(t)} className="text-gray-300 hover:text-red-400">

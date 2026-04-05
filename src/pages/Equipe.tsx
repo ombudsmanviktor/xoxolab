@@ -41,23 +41,23 @@ export function Equipe() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-xl font-bold text-gray-900">Equipe</h1>
-        <p className="text-sm text-gray-500 mt-0.5">{users.length} colaborador{users.length !== 1 ? 'es' : ''} — menções e atribuições</p>
+        <h1 className="text-xl font-bold text-gray-900 dark:text-white">Equipe</h1>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">{users.length} colaborador{users.length !== 1 ? 'es' : ''} — menções e atribuições</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
         {userActivity.map(u => {
           const totalPending = u.avisosMentions.length + u.pautasMentions.length + u.kanbanAssigned.length + u.kanbanMentions.length
           return (
-            <div key={u.email} className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
+            <div key={u.email} className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm overflow-hidden">
               {/* User header */}
-              <div className="px-5 py-4 border-b border-gray-100 flex items-center gap-3">
+              <div className="px-5 py-4 border-b border-gray-100 dark:border-gray-700 flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full bg-purple-100 text-purple-700 flex items-center justify-center font-semibold text-sm flex-shrink-0">
                   {emailInitials(u.email)}
                 </div>
                 <div className="min-w-0">
-                  <p className="font-semibold text-gray-900 text-sm truncate">{u.email}</p>
-                  <p className="text-xs text-gray-400">{totalPending} pendência{totalPending !== 1 ? 's' : ''}</p>
+                  <p className="font-semibold text-gray-900 dark:text-white text-sm truncate">{u.email}</p>
+                  <p className="text-xs text-gray-400 dark:text-gray-500">{totalPending} pendência{totalPending !== 1 ? 's' : ''}</p>
                 </div>
               </div>
 
@@ -93,7 +93,7 @@ export function Equipe() {
                 )}
 
                 {totalPending === 0 && (
-                  <p className="text-xs text-gray-300 italic text-center py-2">Sem pendências</p>
+                  <p className="text-xs text-gray-300 dark:text-gray-600 italic text-center py-2">Sem pendências</p>
                 )}
               </div>
             </div>
@@ -109,7 +109,7 @@ function Section({ icon: Icon, label, color, children }: { icon: React.Component
     <div>
       <div className="flex items-center gap-1.5 mb-1.5">
         <Icon className={cn('w-3.5 h-3.5', color)} />
-        <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{label}</span>
+        <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">{label}</span>
       </div>
       <div className="space-y-1 pl-5">{children}</div>
     </div>
@@ -118,10 +118,10 @@ function Section({ icon: Icon, label, color, children }: { icon: React.Component
 
 function ActivityItem({ title, subtitle, date }: { title: string; subtitle?: string; date: string }) {
   return (
-    <div className="text-xs text-gray-600">
+    <div className="text-xs text-gray-600 dark:text-gray-300">
       <p className="font-medium leading-tight truncate">{title}</p>
-      {subtitle && <p className="text-gray-400 text-[10px]">{subtitle}</p>}
-      <p className="text-gray-300 text-[10px]">{formatDateTime(date)}</p>
+      {subtitle && <p className="text-gray-400 dark:text-gray-500 text-[10px]">{subtitle}</p>}
+      <p className="text-gray-300 dark:text-gray-600 text-[10px]">{formatDateTime(date)}</p>
     </div>
   )
 }

@@ -103,9 +103,9 @@ export function Projects() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-violet-50">
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-violet-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
       {/* Top bar */}
-      <header className="bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between">
+      <header className="bg-white dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700 px-6 py-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none" className="w-full h-full">
@@ -122,10 +122,10 @@ export function Projects() {
               <rect x="21"   y="24"  width="7" height="3.5" rx="1.5" fill="white" opacity="0.35"/>
             </svg>
           </div>
-          <span className="font-semibold text-gray-900">xoxoLAB</span>
+          <span className="font-semibold text-gray-900 dark:text-white">xoxoLAB</span>
         </div>
         <div className="flex items-center gap-3">
-          <span className="text-sm text-gray-500 hidden sm:block">{session?.email}</span>
+          <span className="text-sm text-gray-500 dark:text-gray-400 hidden sm:block">{session?.email}</span>
           <Button variant="ghost" size="icon" onClick={() => navigate('/settings')} title="Configurações da conta">
             <SlidersHorizontal className="w-4 h-4" />
           </Button>
@@ -145,8 +145,8 @@ export function Projects() {
 
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Meus Projetos</h1>
-            <p className="text-gray-500 text-sm mt-1">Selecione um projeto ou crie um novo</p>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Meus Projetos</h1>
+            <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">Selecione um projeto ou crie um novo</p>
           </div>
           <Button onClick={() => setNewOpen(true)} disabled={isDemoMode} title={isDemoMode ? 'Indisponível no modo demonstração' : undefined}>
             <Plus className="w-4 h-4" />
@@ -160,9 +160,9 @@ export function Projects() {
           </div>
         ) : projects.length === 0 ? (
           <div className="text-center py-20">
-            <Folder className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-            <p className="text-gray-500 font-medium">Nenhum projeto ainda</p>
-            <p className="text-gray-400 text-sm mt-1">Crie seu primeiro projeto para começar</p>
+            <Folder className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
+            <p className="text-gray-500 dark:text-gray-400 font-medium">Nenhum projeto ainda</p>
+            <p className="text-gray-400 dark:text-gray-500 text-sm mt-1">Crie seu primeiro projeto para começar</p>
             <Button className="mt-6" onClick={() => setNewOpen(true)}>
               <Plus className="w-4 h-4" />
               Criar Projeto
@@ -173,7 +173,7 @@ export function Projects() {
             {projects.map(p => (
               <div
                 key={p.id}
-                className="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md hover:border-purple-200 transition-all cursor-pointer group relative"
+                className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md hover:border-purple-200 transition-all cursor-pointer group relative"
               >
                 <div
                   className="p-6"
@@ -182,8 +182,8 @@ export function Projects() {
                   <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center mb-4">
                     <Folder className="w-5 h-5 text-purple-600" />
                   </div>
-                  <h3 className="font-semibold text-gray-900 mb-1">{p.name}</h3>
-                  <div className="flex items-center gap-1.5 text-xs text-gray-400">
+                  <h3 className="font-semibold text-gray-900 dark:text-white mb-1">{p.name}</h3>
+                  <div className="flex items-center gap-1.5 text-xs text-gray-400 dark:text-gray-500">
                     <Users className="w-3 h-3" />
                     {p.users.length} colaborador{p.users.length !== 1 ? 'es' : ''}
                   </div>
@@ -191,7 +191,7 @@ export function Projects() {
                 {!isDemoMode && (
                   <button
                     onClick={e => { e.stopPropagation(); openSettings(p) }}
-                    className="absolute top-4 right-4 p-1.5 rounded-md text-gray-300 hover:text-gray-600 hover:bg-gray-100 opacity-0 group-hover:opacity-100 transition-all"
+                    className="absolute top-4 right-4 p-1.5 rounded-md text-gray-300 dark:text-gray-600 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 opacity-0 group-hover:opacity-100 transition-all"
                     title="Configurações"
                   >
                     <Settings className="w-4 h-4" />
@@ -222,7 +222,7 @@ export function Projects() {
                 onChange={e => setNewUsers(e.target.value)}
                 rows={3}
               />
-              <p className="text-xs text-gray-400">Separe os emails por vírgula ou linha</p>
+              <p className="text-xs text-gray-400 dark:text-gray-500">Separe os emails por vírgula ou linha</p>
             </div>
           </div>
           <DialogFooter>
@@ -253,7 +253,7 @@ export function Projects() {
                 rows={4}
                 placeholder="email1@domain.com, email2@domain.com"
               />
-              <p className="text-xs text-gray-400">O seu email ({session?.email}) é incluído automaticamente</p>
+              <p className="text-xs text-gray-400 dark:text-gray-500">O seu email ({session?.email}) é incluído automaticamente</p>
             </div>
 
             {confirmDelete ? (

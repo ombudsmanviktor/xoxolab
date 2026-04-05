@@ -486,8 +486,8 @@ export function Efemerides() {
       {/* Header */}
       <div className="flex items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl font-bold text-gray-900">Efemérides</h1>
-          <p className="text-sm text-gray-500 mt-0.5">Calendário de eventos e datas importantes</p>
+          <h1 className="text-xl font-bold text-gray-900 dark:text-white">Efemérides</h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Calendário de eventos e datas importantes</p>
         </div>
         <div className="flex items-center gap-2 flex-wrap justify-end">
           <Button variant="outline" size="sm" onClick={() => fileInputRef.current?.click()} title="Importar arquivo .ics">
@@ -530,23 +530,23 @@ export function Efemerides() {
       </div>
 
       {/* Calendar navigation */}
-      <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-          <button onClick={() => setCurrentMonth(m => subMonths(m, 1))} className="p-1 rounded hover:bg-gray-100">
-            <ChevronLeft className="w-5 h-5 text-gray-500" />
+      <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-gray-700">
+          <button onClick={() => setCurrentMonth(m => subMonths(m, 1))} className="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700">
+            <ChevronLeft className="w-5 h-5 text-gray-500 dark:text-gray-400" />
           </button>
-          <h2 className="font-semibold text-gray-900 capitalize">
+          <h2 className="font-semibold text-gray-900 dark:text-white capitalize">
             {format(currentMonth, 'MMMM yyyy', { locale: ptBR })}
           </h2>
-          <button onClick={() => setCurrentMonth(m => addMonths(m, 1))} className="p-1 rounded hover:bg-gray-100">
-            <ChevronRight className="w-5 h-5 text-gray-500" />
+          <button onClick={() => setCurrentMonth(m => addMonths(m, 1))} className="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700">
+            <ChevronRight className="w-5 h-5 text-gray-500 dark:text-gray-400" />
           </button>
         </div>
 
         {/* Weekday headers */}
-        <div className="grid grid-cols-7 border-b border-gray-100">
+        <div className="grid grid-cols-7 border-b border-gray-100 dark:border-gray-700">
           {WEEKDAYS.map(d => (
-            <div key={d} className="py-2 text-center text-xs font-semibold text-gray-400">{d}</div>
+            <div key={d} className="py-2 text-center text-xs font-semibold text-gray-400 dark:text-gray-500">{d}</div>
           ))}
         </div>
 
@@ -554,7 +554,7 @@ export function Efemerides() {
         <div className="grid grid-cols-7">
           {/* Offset empty cells */}
           {Array.from({ length: startOffset }).map((_, i) => (
-            <div key={`empty-${i}`} className="h-24 border-b border-r border-gray-50" />
+            <div key={`empty-${i}`} className="h-24 border-b border-r border-gray-50 dark:border-gray-700" />
           ))}
 
           {days.map(day => {
@@ -567,7 +567,7 @@ export function Efemerides() {
               <div
                 key={dateStr}
                 className={cn(
-                  'h-24 border-b border-r border-gray-100 p-1.5 cursor-pointer hover:bg-gray-50 transition-colors',
+                  'h-24 border-b border-r border-gray-100 dark:border-gray-700 p-1.5 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors',
                   !isCurrentMonth && 'opacity-30',
                   selectedDate === dateStr && 'bg-purple-50'
                 )}
@@ -575,7 +575,7 @@ export function Efemerides() {
               >
                 <div className={cn(
                   'text-xs font-semibold w-6 h-6 flex items-center justify-center rounded-full mb-1',
-                  isCurrentDay ? 'bg-purple-600 text-white' : 'text-gray-600'
+                  isCurrentDay ? 'bg-purple-600 text-white' : 'text-gray-600 dark:text-gray-300'
                 )}>
                   {format(day, 'd')}
                 </div>
@@ -599,7 +599,7 @@ export function Efemerides() {
                     )
                   })}
                   {events.length > 3 && (
-                    <div className="text-[9px] text-gray-400 px-1">+{events.length - 3} mais</div>
+                    <div className="text-[9px] text-gray-400 dark:text-gray-500 px-1">+{events.length - 3} mais</div>
                   )}
                 </div>
               </div>
@@ -610,12 +610,12 @@ export function Efemerides() {
 
       {/* Event list for the month */}
       <div className="space-y-2">
-        <h3 className="font-semibold text-gray-700 text-sm">Eventos do mês</h3>
+        <h3 className="font-semibold text-gray-700 dark:text-gray-200 text-sm">Eventos do mês</h3>
         {[...eventsByDate.entries()]
           .sort(([a], [b]) => a.localeCompare(b))
           .map(([date, evs]) => (
             <div key={date} className="flex gap-3 items-start">
-              <div className="text-xs text-gray-400 font-medium w-20 flex-shrink-0 pt-1">{formatDate(date)}</div>
+              <div className="text-xs text-gray-400 dark:text-gray-500 font-medium w-20 flex-shrink-0 pt-1">{formatDate(date)}</div>
               <div className="flex-1 space-y-1">
                 {evs.map(ev => {
                   const col = colorMap[ev.tags[0]] ?? colorMap.purple
@@ -636,33 +636,33 @@ export function Efemerides() {
             </div>
           ))}
         {eventsByDate.size === 0 && (
-          <p className="text-sm text-gray-400 italic text-center py-4">Nenhum evento este mês</p>
+          <p className="text-sm text-gray-400 dark:text-gray-500 italic text-center py-4">Nenhum evento este mês</p>
         )}
       </div>
 
       {/* Embed code — collapsible */}
-      <details className="group border border-gray-100 rounded-xl overflow-hidden">
-        <summary className="flex items-center gap-2 px-4 py-2.5 cursor-pointer text-xs text-gray-400 hover:text-gray-600 select-none [list-style:none] [&::-webkit-details-marker]:hidden">
+      <details className="group border border-gray-100 dark:border-gray-700 rounded-xl overflow-hidden">
+        <summary className="flex items-center gap-2 px-4 py-2.5 cursor-pointer text-xs text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 select-none [list-style:none] [&::-webkit-details-marker]:hidden">
           <Code2 className="w-3.5 h-3.5 flex-shrink-0" />
           <span>Incorporar calendário</span>
           <ChevronRight className="w-3.5 h-3.5 ml-auto group-open:rotate-90 transition-transform" />
         </summary>
-        <div className="px-4 pb-4 pt-2 space-y-3 bg-gray-50 border-t border-gray-100">
+        <div className="px-4 pb-4 pt-2 space-y-3 bg-gray-50 dark:bg-gray-900 border-t border-gray-100 dark:border-gray-700">
           {(!session?.githubConfig?.owner || !session?.githubConfig?.repo) ? (
             <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
               ⚠️ O embed requer login com uma conta GitHub real. No modo demo não há repositório para incorporar.
             </p>
           ) : (
             <>
-              <p className="text-xs text-gray-500">
+              <p className="text-xs text-gray-500 dark:text-gray-400">
                 Cole o código abaixo em qualquer página HTML para exibir este calendário.
               </p>
 
               {/* Token input for public embeds */}
               <div className="space-y-1">
-                <label className="text-xs font-medium text-gray-600">
+                <label className="text-xs font-medium text-gray-600 dark:text-gray-300">
                   Token de acesso de leitura{' '}
-                  <span className="font-normal text-gray-400">(necessário para repositórios privados)</span>
+                  <span className="font-normal text-gray-400 dark:text-gray-500">(necessário para repositórios privados)</span>
                 </label>
                 <Input
                   value={embedToken}
@@ -670,7 +670,7 @@ export function Efemerides() {
                   placeholder="ghp_xxxxxxxxxxxxxxxxxxxx"
                   className="text-xs font-mono h-8"
                 />
-                <p className="text-[11px] text-gray-400 leading-relaxed">
+                <p className="text-[11px] text-gray-400 dark:text-gray-500 leading-relaxed">
                   No GitHub: <em>Settings → Developer settings → Personal access tokens → Fine-grained</em>.
                   Permissão: <strong>Repository contents → Read-only</strong>.
                   O token ficará na URL — crie um exclusivo para leitura deste repositório.
@@ -678,13 +678,13 @@ export function Efemerides() {
               </div>
 
               <div className="relative">
-                <pre className="text-[11px] bg-white border border-gray-200 rounded-lg p-3 pr-10 overflow-x-auto text-gray-700 leading-relaxed whitespace-pre-wrap break-all">
+                <pre className="text-[11px] bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-3 pr-10 overflow-x-auto text-gray-700 dark:text-gray-200 leading-relaxed whitespace-pre-wrap break-all">
                   {iframeCode}
                 </pre>
                 <button
                   onClick={copyEmbed}
                   title="Copiar código"
-                  className="absolute top-2 right-2 p-1.5 rounded-md hover:bg-gray-100 text-gray-400 hover:text-gray-700 transition-colors"
+                  className="absolute top-2 right-2 p-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-400 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
                 >
                   {embedCopied ? <Check className="w-3.5 h-3.5 text-green-600" /> : <Copy className="w-3.5 h-3.5" />}
                 </button>

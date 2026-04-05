@@ -406,15 +406,15 @@ export function Pautas() {
             ref={provided.innerRef}
             {...provided.draggableProps}
             className={cn(
-              'flex items-start gap-2 bg-white border border-gray-100 rounded-lg p-3 group transition-shadow',
+              'flex items-start gap-2 bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-lg p-3 group transition-shadow',
               snapshot.isDragging && 'shadow-lg border-purple-200'
             )}
           >
-            <div {...provided.dragHandleProps} className="flex-shrink-0 mt-0.5 cursor-grab active:cursor-grabbing text-gray-300 hover:text-gray-400">
+            <div {...provided.dragHandleProps} className="flex-shrink-0 mt-0.5 cursor-grab active:cursor-grabbing text-gray-300 dark:text-gray-600 hover:text-gray-400 dark:hover:text-gray-400">
               <GripVertical className="w-4 h-4" />
             </div>
             <div className="flex-1 min-w-0 cursor-pointer" onClick={() => openEditItem(item)}>
-              <p className="font-medium text-gray-900 text-sm">{item.title}</p>
+              <p className="font-medium text-gray-900 dark:text-white text-sm">{item.title}</p>
               {item.body && <MarkdownRenderer content={item.body.slice(0, 100)} className="text-xs text-gray-500 mt-0.5" />}
               <div className="flex items-center gap-2 mt-1.5 flex-wrap">
                 {item.tags.map(tagId => {
@@ -428,20 +428,20 @@ export function Pautas() {
                   )
                 })}
                 {item.dueDate && (
-                  <span className="text-[10px] text-gray-400">{formatDate(item.dueDate)}</span>
+                  <span className="text-[10px] text-gray-400 dark:text-gray-500">{formatDate(item.dueDate)}</span>
                 )}
               </div>
             </div>
             <button
               onClick={() => handleForwardToConteudos(item)}
-              className="opacity-0 group-hover:opacity-100 text-gray-300 hover:text-violet-500 transition-all flex-shrink-0"
+              className="opacity-0 group-hover:opacity-100 text-gray-300 dark:text-gray-600 hover:text-violet-500 transition-all flex-shrink-0"
               title="Enviar para Conteúdos"
             >
               <SendHorizonal className="w-3.5 h-3.5" />
             </button>
             <button
               onClick={() => handleDeleteItem(item.id)}
-              className="opacity-0 group-hover:opacity-100 text-gray-300 hover:text-red-400 transition-all flex-shrink-0"
+              className="opacity-0 group-hover:opacity-100 text-gray-300 dark:text-gray-600 hover:text-red-400 transition-all flex-shrink-0"
             >
               <Trash2 className="w-3.5 h-3.5" />
             </button>
@@ -462,8 +462,8 @@ export function Pautas() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-bold text-gray-900">Pautas</h1>
-          <p className="text-sm text-gray-500 mt-0.5">{data.items.length} itens</p>
+          <h1 className="text-xl font-bold text-gray-900 dark:text-white">Pautas</h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">{data.items.length} itens</p>
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" onClick={() => setTagDialog(true)}>
@@ -480,7 +480,7 @@ export function Pautas() {
               Exportar
             </Button>
             {exportOpen && (
-              <div className="absolute right-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-30 py-1 min-w-[150px]">
+              <div className="absolute right-0 top-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-30 py-1 min-w-[150px]">
                 {[
                   { label: 'PDF', fn: exportPDF },
                   { label: 'Excel (XLS)', fn: exportXLS },
@@ -490,7 +490,7 @@ export function Pautas() {
                   <button
                     key={label}
                     onClick={() => { fn(); setExportOpen(false) }}
-                    className="w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 text-left transition-colors"
+                    className="w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 text-left transition-colors"
                   >
                     {label}
                   </button>
@@ -541,8 +541,8 @@ export function Pautas() {
           const items = bySectionId.get(section.id) ?? []
           const isCollapsed = collapsedSections.has(section.id)
           return (
-            <div key={section.id} className="border border-gray-200 rounded-xl overflow-hidden">
-              <div className="flex items-center gap-2 px-4 py-3 bg-gray-50 border-b border-gray-100">
+            <div key={section.id} className="border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden">
+              <div className="flex items-center gap-2 px-4 py-3 bg-gray-50 dark:bg-gray-900 border-b border-gray-100 dark:border-gray-700">
                 <button
                   onClick={() => setCollapsedSections(prev => {
                     const next = new Set(prev)
@@ -552,8 +552,8 @@ export function Pautas() {
                   })}
                   className="flex-1 flex items-center gap-2 text-left"
                 >
-                  {isCollapsed ? <ChevronDown className="w-4 h-4 text-gray-400" /> : <ChevronUp className="w-4 h-4 text-gray-400" />}
-                  <span className="font-semibold text-sm text-gray-700">{section.title}</span>
+                  {isCollapsed ? <ChevronDown className="w-4 h-4 text-gray-400 dark:text-gray-500" /> : <ChevronUp className="w-4 h-4 text-gray-400 dark:text-gray-500" />}
+                  <span className="font-semibold text-sm text-gray-700 dark:text-gray-200">{section.title}</span>
                   <Badge variant="secondary" className="text-[10px] px-1.5 py-0">{items.length}</Badge>
                 </button>
                 <button
@@ -583,7 +583,7 @@ export function Pautas() {
                         {items.map((item, i) => renderItem(item, i))}
                         {provided.placeholder}
                         {items.length === 0 && !snapshot.isDraggingOver && (
-                          <p className="text-xs text-gray-300 text-center py-3 italic">Seção vazia — arraste itens aqui</p>
+                          <p className="text-xs text-gray-300 dark:text-gray-600 text-center py-3 italic">Seção vazia — arraste itens aqui</p>
                         )}
                       </div>
                     )}

@@ -59,7 +59,7 @@ function AvisoCard({
           {...provided.draggableProps}
           {...provided.dragHandleProps}
           className={cn(
-            'rounded-lg border p-3 cursor-pointer hover:shadow-md transition-all bg-white group',
+            'rounded-lg border p-3 cursor-pointer hover:shadow-md transition-all bg-white dark:bg-gray-800 group',
             cfg.borderColor,
             snapshot.isDragging && 'shadow-lg ring-2 ring-purple-300 rotate-1'
           )}
@@ -77,11 +77,11 @@ function AvisoCard({
               )}
             />
             <div className="min-w-0 flex-1">
-              <p className="font-semibold text-gray-900 text-xs leading-tight truncate">{aviso.title}</p>
+              <p className="font-semibold text-gray-900 dark:text-white text-xs leading-tight truncate">{aviso.title}</p>
               {aviso.body && (
-                <p className="text-xs text-gray-500 mt-0.5 line-clamp-2 leading-snug">{aviso.body.slice(0, 80)}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 line-clamp-2 leading-snug">{aviso.body.slice(0, 80)}</p>
               )}
-              <p className="text-[10px] text-gray-400 mt-1">{aviso.author.split('@')[0]}</p>
+              <p className="text-[10px] text-gray-400 dark:text-gray-500 mt-1">{aviso.author.split('@')[0]}</p>
             </div>
           </div>
         </div>
@@ -109,10 +109,10 @@ function Quadrant({
       <div className="flex items-center gap-2 mb-3">
         <div className={cn('w-2.5 h-2.5 rounded-full flex-shrink-0', cfg.color)} />
         <div>
-          <p className="font-semibold text-gray-800 text-sm leading-none">{cfg.label}</p>
-          <p className="text-[11px] text-gray-400 mt-0.5">{cfg.subtitle}</p>
+          <p className="font-semibold text-gray-800 dark:text-gray-100 text-sm leading-none">{cfg.label}</p>
+          <p className="text-[11px] text-gray-400 dark:text-gray-500 mt-0.5">{cfg.subtitle}</p>
         </div>
-        <span className="ml-auto text-xs text-gray-400 font-medium">{avisos.length}</span>
+        <span className="ml-auto text-xs text-gray-400 dark:text-gray-500 font-medium">{avisos.length}</span>
       </div>
       <Droppable droppableId={priority}>
         {(provided, snapshot) => (
@@ -131,7 +131,7 @@ function Quadrant({
               <AvisoCard key={a.id} aviso={a} index={i} onDone={onDone} onClick={() => onCardClick(a)} />
             ))}
             {avisos.length === 0 && !snapshot.isDraggingOver && (
-              <p className="text-xs text-gray-300 italic col-span-full text-center py-4">Nenhum aviso</p>
+              <p className="text-xs text-gray-300 dark:text-gray-600 italic col-span-full text-center py-4">Nenhum aviso</p>
             )}
             {provided.placeholder}
           </div>
@@ -386,8 +386,8 @@ export function Avisos() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-bold text-gray-900">Quadro de Avisos</h1>
-          <p className="text-sm text-gray-500 mt-0.5">Organize por iminência e empenho</p>
+          <h1 className="text-xl font-bold text-gray-900 dark:text-white">Quadro de Avisos</h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Organize por iminência e empenho</p>
         </div>
         <div className="flex items-center gap-2">
           {/* Export dropdown */}
@@ -397,7 +397,7 @@ export function Avisos() {
               Exportar
             </Button>
             {exportOpen && (
-              <div className="absolute right-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-30 py-1 min-w-[150px]">
+              <div className="absolute right-0 top-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-30 py-1 min-w-[150px]">
                 {[
                   { label: 'PNG (imagem)', fn: exportPNG },
                   { label: 'PDF', fn: exportPDF },
@@ -407,7 +407,7 @@ export function Avisos() {
                   <button
                     key={label}
                     onClick={() => { fn(); setExportOpen(false) }}
-                    className="w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 text-left transition-colors"
+                    className="w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 text-left transition-colors"
                   >
                     {label}
                   </button>
@@ -509,10 +509,10 @@ export function Avisos() {
 
       {/* Concluídos */}
       {doneAvisos.length > 0 && (
-        <div className="border border-gray-100 rounded-xl overflow-hidden">
+        <div className="border border-gray-100 dark:border-gray-700 rounded-xl overflow-hidden">
           <button
             onClick={() => setShowDone(v => !v)}
-            className="w-full flex items-center justify-between px-4 py-3 text-sm text-gray-600 hover:bg-gray-50 transition-colors"
+            className="w-full flex items-center justify-between px-4 py-3 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
           >
             <div className="flex items-center gap-2">
               <CheckCircle2 className="w-4 h-4 text-green-500" />
@@ -521,14 +521,14 @@ export function Avisos() {
             {showDone ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
           </button>
           {showDone && (
-            <div className="p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 border-t border-gray-100 bg-gray-50">
+            <div className="p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 border-t border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
               {doneAvisos.map(a => (
-                <div key={a.id} className="bg-white rounded-lg border border-gray-100 p-3 opacity-60">
+                <div key={a.id} className="bg-white dark:bg-gray-800 rounded-lg border border-gray-100 dark:border-gray-700 p-3 opacity-60">
                   <div className="flex items-start gap-2">
                     <CheckCircle2 className="w-4 h-4 text-green-400 flex-shrink-0 mt-0.5" />
                     <div className="min-w-0">
-                      <p className="font-medium text-gray-700 text-sm line-through truncate">{a.title}</p>
-                      <p className="text-xs text-gray-400">{a.author.split('@')[0]}</p>
+                      <p className="font-medium text-gray-700 dark:text-gray-200 text-sm line-through truncate">{a.title}</p>
+                      <p className="text-xs text-gray-400 dark:text-gray-500">{a.author.split('@')[0]}</p>
                     </div>
                   </div>
                 </div>

@@ -82,7 +82,7 @@ function KanbanTimeline({
   const colWidth = Math.round(totalWidth / months.length)
 
   return (
-    <div className="flex border-b border-gray-200 bg-white" style={{ minWidth: totalWidth }}>
+    <div className="flex border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800" style={{ minWidth: totalWidth }}>
       {months.map(month => {
         const monthStr = format(month, 'yyyy-MM')
         const monthCards = cardsWithDates.filter(c => c.dueDate!.startsWith(monthStr))
@@ -90,10 +90,10 @@ function KanbanTimeline({
         return (
           <div
             key={monthStr}
-            className="flex-shrink-0 border-r border-gray-100 p-2"
+            className="flex-shrink-0 border-r border-gray-100 dark:border-gray-700 p-2"
             style={{ width: colWidth }}
           >
-            <p className="text-[11px] font-semibold text-gray-500 mb-1.5 uppercase tracking-wide">
+            <p className="text-[11px] font-semibold text-gray-500 dark:text-gray-400 mb-1.5 uppercase tracking-wide">
               {format(month, 'MMM yyyy', { locale: ptBR })}
             </p>
             <div className="flex flex-wrap gap-1">
@@ -176,13 +176,13 @@ function KanbanCardView({
   return (
     <div
       className={cn(
-        'group bg-white rounded-lg border border-gray-100 border-l-4 p-3 shadow-sm hover:shadow-md transition-shadow',
+        'group bg-white dark:bg-gray-800 rounded-lg border border-gray-100 dark:border-gray-700 border-l-4 p-3 shadow-sm hover:shadow-md transition-shadow',
         borderColorClass,
       )}
     >
       <div className="flex items-start gap-1">
         <div className="flex-1 min-w-0">
-          <p className="font-semibold text-gray-900 text-sm leading-snug mb-0.5">{card.title}</p>
+          <p className="font-semibold text-gray-900 dark:text-white text-sm leading-snug mb-0.5">{card.title}</p>
           {isPendente && (
             <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-yellow-100 text-yellow-700 font-medium">PENDENTE</span>
           )}
@@ -224,7 +224,7 @@ function KanbanCardView({
         </button>
       </div>
       {card.description && (
-        <p className="text-xs text-gray-500 line-clamp-2 mb-2 mt-1">{card.description.slice(0, 100)}</p>
+        <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-2 mb-2 mt-1">{card.description.slice(0, 100)}</p>
       )}
 
       <div className="flex flex-wrap items-center gap-1.5 mt-2">
@@ -947,8 +947,8 @@ export function Kanban() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-bold text-gray-900">Kanban</h1>
-          <p className="text-sm text-gray-500 mt-0.5">Gestão de conteúdo por etapas</p>
+          <h1 className="text-xl font-bold text-gray-900 dark:text-white">Kanban</h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Gestão de conteúdo por etapas</p>
         </div>
         <div className="flex items-center gap-2">
           {/* Export dropdown */}
@@ -958,7 +958,7 @@ export function Kanban() {
               Exportar
             </Button>
             {exportOpen && (
-              <div className="absolute right-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-30 py-1 min-w-[180px]">
+              <div className="absolute right-0 top-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-30 py-1 min-w-[180px]">
                 {[
                   { label: 'Timeline — PDF', fn: exportTimelinePDF },
                   { label: 'Board — PNG', fn: exportBoardPNG },
@@ -970,7 +970,7 @@ export function Kanban() {
                   <button
                     key={label}
                     onClick={() => { fn(); setExportOpen(false) }}
-                    className="w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 text-left transition-colors"
+                    className="w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 text-left transition-colors"
                   >
                     {label}
                   </button>
@@ -992,37 +992,37 @@ export function Kanban() {
       </div>
 
       {/* Board wrapper (timeline + columns scroll together) */}
-      <div className="overflow-x-auto rounded-xl border border-gray-200" ref={boardRef}>
+      <div className="overflow-x-auto rounded-xl border border-gray-200 dark:border-gray-700" ref={boardRef}>
         {/* Timeline */}
         <KanbanTimeline cards={allCards} eventos={eventos} totalWidth={totalWidth} monthCount={monthCount} />
 
         {/* Divider between timeline and board */}
-        <div className="border-t-4 border-gray-200 bg-gray-100 px-4 py-1.5 flex items-center gap-2">
-          <span className="text-[10px] text-gray-400 uppercase tracking-widest font-semibold">Quadro</span>
+        <div className="border-t-4 border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800 px-4 py-1.5 flex items-center gap-2">
+          <span className="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-widest font-semibold">Quadro</span>
         </div>
 
         {/* Columns */}
         <DragDropContext onDragEnd={onDragEnd}>
-          <div className="flex gap-0 bg-gray-50" style={{ minWidth: totalWidth }}>
+          <div className="flex gap-0 bg-gray-50 dark:bg-gray-900" style={{ minWidth: totalWidth }}>
             {COLUMNS.map(col => {
               const isCollapsed = collapsed.has(col.id)
               const cards = cardsByColumn.get(col.id) ?? []
               return (
                 <div
                   key={col.id}
-                  className={cn('flex-shrink-0 border-r border-gray-200 last:border-r-0', isCollapsed ? 'w-10' : '')}
+                  className={cn('flex-shrink-0 border-r border-gray-200 dark:border-gray-700 last:border-r-0', isCollapsed ? 'w-10' : '')}
                   style={{ width: isCollapsed ? 40 : COLUMN_WIDTH }}
                 >
                   {isCollapsed ? (
                     <div className="flex flex-col items-center py-4 h-full">
                       <button
                         onClick={() => toggleCollapse(col.id)}
-                        className="p-1 text-gray-400 hover:text-gray-600 mb-2"
+                        className="p-1 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 mb-2"
                       >
                         <ChevronRight className="w-4 h-4" />
                       </button>
                       <span
-                        className="text-[11px] font-semibold text-gray-400 uppercase tracking-widest"
+                        className="text-[11px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-widest"
                         style={{ writingMode: 'vertical-rl', textOrientation: 'mixed', transform: 'rotate(180deg)' }}
                       >
                         {col.label} ({cards.length})
@@ -1031,11 +1031,11 @@ export function Kanban() {
                   ) : (
                     <div className="flex flex-col" style={{ minHeight: 400 }}>
                       {/* Column header */}
-                      <div className={cn('px-3 py-2.5 border-b border-gray-200 flex items-center gap-2', col.color)}>
-                        <button onClick={() => toggleCollapse(col.id)} className="text-gray-400 hover:text-gray-600">
+                      <div className={cn('px-3 py-2.5 border-b border-gray-200 dark:border-gray-700 flex items-center gap-2', col.color)}>
+                        <button onClick={() => toggleCollapse(col.id)} className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300">
                           <ChevronLeft className="w-4 h-4" />
                         </button>
-                        <span className="font-semibold text-sm text-gray-700 flex-1">{col.label}</span>
+                        <span className="font-semibold text-sm text-gray-700 dark:text-gray-200 flex-1">{col.label}</span>
                         <Badge variant="secondary" className="text-[10px] px-1.5">{cards.length}</Badge>
                         {col.id !== 'publicacao' && (
                           <button
