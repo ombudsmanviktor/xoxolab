@@ -29,11 +29,11 @@ import { cn } from '@/lib/utils'
 import type { KanbanCard, KanbanColumn, KanbanPriority, KanbanLogEntry, Evento, Attachment } from '@/types'
 
 const COLUMNS: { id: KanbanColumn; label: string; color: string; collapsedByDefault: boolean }[] = [
-  { id: 'planejamento',      label: 'Planejamento',        color: 'bg-gray-100 border-gray-200',    collapsedByDefault: false },
-  { id: 'criacao',           label: 'Criação',             color: 'bg-blue-50 border-blue-200',     collapsedByDefault: false },
-  { id: 'revisao-aprovacao', label: 'Revisão / Aprovação', color: 'bg-amber-50 border-amber-200',   collapsedByDefault: false },
-  { id: 'agendamento',       label: 'Agendamento',         color: 'bg-purple-50 border-purple-200', collapsedByDefault: false },
-  { id: 'publicacao',        label: 'Publicação',          color: 'bg-green-50 border-green-200',   collapsedByDefault: true  },
+  { id: 'planejamento',      label: 'Planejamento',        color: 'bg-gray-100 border-gray-200 dark:bg-gray-800 dark:border-gray-700',          collapsedByDefault: false },
+  { id: 'criacao',           label: 'Criação',             color: 'bg-blue-50 border-blue-200 dark:bg-blue-950/30 dark:border-blue-900/50',     collapsedByDefault: false },
+  { id: 'revisao-aprovacao', label: 'Revisão / Aprovação', color: 'bg-amber-50 border-amber-200 dark:bg-amber-950/30 dark:border-amber-900/50', collapsedByDefault: false },
+  { id: 'agendamento',       label: 'Agendamento',         color: 'bg-purple-50 border-purple-200 dark:bg-purple-950/30 dark:border-purple-900/50', collapsedByDefault: false },
+  { id: 'publicacao',        label: 'Publicação',          color: 'bg-green-50 border-green-200 dark:bg-green-950/30 dark:border-green-900/50', collapsedByDefault: true  },
 ]
 
 // Migrate old column IDs to new ones
@@ -184,7 +184,7 @@ function KanbanCardView({
         <div className="flex-1 min-w-0">
           <p className="font-semibold text-gray-900 dark:text-white text-sm leading-snug mb-0.5">{card.title}</p>
           {isPendente && (
-            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-yellow-100 text-yellow-700 font-medium">PENDENTE</span>
+            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300 font-medium">PENDENTE</span>
           )}
         </div>
         {/* Download dropdown */}
@@ -197,7 +197,7 @@ function KanbanCardView({
             <Download className="w-3.5 h-3.5" />
           </button>
           {dlOpen && (
-            <div className="absolute right-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50 py-1 min-w-[170px]">
+            <div className="absolute right-0 top-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50 py-1 min-w-[170px]">
               {([
                 { icon: <FileText className="w-3.5 h-3.5 text-gray-500" />, label: 'Markdown (.md)', fmt: 'md' as const },
                 { icon: <FileType2 className="w-3.5 h-3.5 text-blue-500" />, label: 'Word (.docx)', fmt: 'docx' as const },
@@ -206,7 +206,7 @@ function KanbanCardView({
                 <button
                   key={fmt}
                   onClick={e => { e.stopPropagation(); setDlOpen(false); onDownloadCard(fmt) }}
-                  className="w-full px-3 py-1.5 text-xs text-gray-700 hover:bg-gray-50 text-left flex items-center gap-2"
+                  className="w-full px-3 py-1.5 text-xs text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 text-left flex items-center gap-2"
                 >
                   {icon}
                   {label}
@@ -307,8 +307,8 @@ function KanbanCardView({
         className={cn(
           'mt-2 border border-dashed rounded flex items-center justify-center gap-1 h-8 cursor-pointer transition-colors text-[10px]',
           isDragOver
-            ? 'border-purple-400 bg-purple-50 text-purple-600'
-            : 'border-gray-200 text-gray-300 hover:border-gray-400 hover:text-gray-400'
+            ? 'border-purple-400 bg-purple-50 dark:bg-purple-950/30 text-purple-600'
+            : 'border-gray-200 dark:border-gray-600 text-gray-300 dark:text-gray-600 hover:border-gray-400 dark:hover:border-gray-400 hover:text-gray-400'
         )}
         onClick={e => { e.stopPropagation(); fileInputRef.current?.click() }}
         onDragOver={e => { e.preventDefault(); e.stopPropagation(); setIsDragOver(true) }}
@@ -332,7 +332,7 @@ function KanbanCardView({
       </div>
 
       {card.log?.length > 0 && (
-        <div className="mt-2 border-t border-gray-50 pt-1">
+        <div className="mt-2 border-t border-gray-100 dark:border-gray-700 pt-1">
           <button
             onClick={e => { e.stopPropagation(); setShowLog(v => !v) }}
             className="flex items-center gap-1 text-[10px] text-gray-400 hover:text-gray-600"
@@ -1055,7 +1055,7 @@ export function Kanban() {
                             {...provided.droppableProps}
                             className={cn(
                               'flex-1 p-2 space-y-2 overflow-y-auto',
-                              snapshot.isDraggingOver && 'bg-purple-50',
+                              snapshot.isDraggingOver && 'bg-purple-50 dark:bg-purple-950/20',
                             )}
                             style={{ maxHeight: 600 }}
                           >
@@ -1197,7 +1197,7 @@ export function Kanban() {
                   <Label className="flex items-center gap-1.5">
                     Agendada para Publicação
                     {!cardScheduledAt && (
-                      <span className="text-[10px] font-semibold text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded-full">
+                      <span className="text-[10px] font-semibold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/30 px-1.5 py-0.5 rounded-full">
                         ⚠ Obrigatório — define prazo de publicação
                       </span>
                     )}
@@ -1227,7 +1227,7 @@ export function Kanban() {
               <Label>Imagens e Vídeos</Label>
               {/* Drop zone */}
               <div
-                className="border-2 border-dashed border-gray-200 rounded-lg p-4 text-center cursor-pointer hover:border-purple-400 hover:bg-purple-50 transition-colors"
+                className="border-2 border-dashed border-gray-200 dark:border-gray-600 rounded-lg p-4 text-center cursor-pointer hover:border-purple-400 hover:bg-purple-50 dark:hover:bg-purple-950/20 transition-colors"
                 onClick={() => dialogFileRef.current?.click()}
                 onDragOver={e => e.preventDefault()}
                 onDrop={e => {

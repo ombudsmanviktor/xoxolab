@@ -25,10 +25,10 @@ const PRIORITY_CONFIG: Record<AvisoPriority, {
   borderColor: string
   subtitle: string
 }> = {
-  critico:     { label: 'Crítico',     color: 'bg-red-500',    bgColor: 'bg-red-50',    borderColor: 'border-red-200',    subtitle: 'Alta iminência · Alto empenho' },
-  estrutural:  { label: 'Estrutural',  color: 'bg-amber-500',  bgColor: 'bg-amber-50',  borderColor: 'border-amber-200',  subtitle: 'Baixa iminência · Alto empenho' },
-  operacional: { label: 'Operacional', color: 'bg-blue-500',   bgColor: 'bg-blue-50',   borderColor: 'border-blue-200',   subtitle: 'Alta iminência · Baixo empenho' },
-  residual:    { label: 'Residual',    color: 'bg-gray-400',   bgColor: 'bg-gray-50',   borderColor: 'border-gray-200',   subtitle: 'Baixa iminência · Baixo empenho' },
+  critico:     { label: 'Crítico',     color: 'bg-red-500',    bgColor: 'bg-red-50 dark:bg-red-950/30',       borderColor: 'border-red-200 dark:border-red-900/50',    subtitle: 'Alta iminência · Alto empenho' },
+  estrutural:  { label: 'Estrutural',  color: 'bg-amber-500',  bgColor: 'bg-amber-50 dark:bg-amber-950/30',   borderColor: 'border-amber-200 dark:border-amber-900/50', subtitle: 'Baixa iminência · Alto empenho' },
+  operacional: { label: 'Operacional', color: 'bg-blue-500',   bgColor: 'bg-blue-50 dark:bg-blue-950/30',     borderColor: 'border-blue-200 dark:border-blue-900/50',   subtitle: 'Alta iminência · Baixo empenho' },
+  residual:    { label: 'Residual',    color: 'bg-gray-400',   bgColor: 'bg-gray-50 dark:bg-gray-800',        borderColor: 'border-gray-200 dark:border-gray-700',      subtitle: 'Baixa iminência · Baixo empenho' },
 }
 
 function getCardMinWidth(count: number): number {
@@ -424,10 +424,10 @@ export function Avisos() {
 
       {/* Eisenhower Matrix */}
       <DragDropContext onDragEnd={handleDragEnd}>
-        <div id="avisos-matrix" className="bg-amber-50/40 rounded-2xl p-5 border border-amber-100">
+        <div id="avisos-matrix" className="bg-amber-50/40 dark:bg-amber-950/10 rounded-2xl p-5 border border-amber-100 dark:border-amber-900/30">
           {/* Top axis label: Alto Empenho */}
           <div className="flex justify-center mb-4">
-            <div className="flex items-center gap-1.5 bg-amber-100 text-amber-800 text-xs font-bold px-4 py-1.5 rounded-full select-none">
+            <div className="flex items-center gap-1.5 bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-200 text-xs font-bold px-4 py-1.5 rounded-full select-none">
               <ArrowUp className="w-3.5 h-3.5" />
               Alto Empenho
             </div>
@@ -436,7 +436,7 @@ export function Avisos() {
           <div className="flex items-stretch gap-3">
             {/* Left axis label: Baixa Iminência */}
             <div className="flex items-center justify-center flex-shrink-0 select-none">
-              <div className="bg-amber-100 text-amber-800 text-xs font-bold px-3 py-2 rounded-full flex flex-col items-center gap-1.5">
+              <div className="bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-200 text-xs font-bold px-3 py-2 rounded-full flex flex-col items-center gap-1.5">
                 <ArrowLeft className="w-3.5 h-3.5" />
                 <span style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)' }}>Baixa Iminência</span>
               </div>
@@ -458,7 +458,7 @@ export function Avisos() {
               </div>
 
               {/* Vertical axis — top segment */}
-              <div className="bg-amber-300 rounded-t-full" />
+              <div className="bg-amber-300 dark:bg-amber-700/50 rounded-t-full" />
 
               {/* TR: Crítico (Alta Iminência + Alto Empenho) */}
               <div style={{ padding: '0 0 8px 8px' }}>
@@ -466,13 +466,13 @@ export function Avisos() {
               </div>
 
               {/* Horizontal axis — left segment */}
-              <div className="bg-amber-300 rounded-l-full" />
+              <div className="bg-amber-300 dark:bg-amber-700/50 rounded-l-full" />
 
               {/* Center intersection */}
-              <div className="bg-amber-400 rounded-full z-10" style={{ margin: '-1px' }} />
+              <div className="bg-amber-400 dark:bg-amber-700/60 rounded-full z-10" style={{ margin: '-1px' }} />
 
               {/* Horizontal axis — right segment */}
-              <div className="bg-amber-300 rounded-r-full" />
+              <div className="bg-amber-300 dark:bg-amber-700/50 rounded-r-full" />
 
               {/* BL: Residual (Baixa Iminência + Baixo Empenho) */}
               <div style={{ padding: '8px 8px 0 0' }}>
@@ -480,7 +480,7 @@ export function Avisos() {
               </div>
 
               {/* Vertical axis — bottom segment */}
-              <div className="bg-amber-300 rounded-b-full" />
+              <div className="bg-amber-300 dark:bg-amber-700/50 rounded-b-full" />
 
               {/* BR: Operacional (Alta Iminência + Baixo Empenho) */}
               <div style={{ padding: '8px 0 0 8px' }}>
@@ -490,7 +490,7 @@ export function Avisos() {
 
             {/* Right axis label: Alta Iminência */}
             <div className="flex items-center justify-center flex-shrink-0 select-none">
-              <div className="bg-amber-100 text-amber-800 text-xs font-bold px-3 py-2 rounded-full flex flex-col items-center gap-1.5">
+              <div className="bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-200 text-xs font-bold px-3 py-2 rounded-full flex flex-col items-center gap-1.5">
                 <span style={{ writingMode: 'vertical-rl' }}>Alta Iminência</span>
                 <ArrowRight className="w-3.5 h-3.5" />
               </div>
@@ -499,7 +499,7 @@ export function Avisos() {
 
           {/* Bottom axis label: Baixo Empenho */}
           <div className="flex justify-center mt-4">
-            <div className="flex items-center gap-1.5 bg-amber-100 text-amber-800 text-xs font-bold px-4 py-1.5 rounded-full select-none">
+            <div className="flex items-center gap-1.5 bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-200 text-xs font-bold px-4 py-1.5 rounded-full select-none">
               Baixo Empenho
               <ArrowDown className="w-3.5 h-3.5" />
             </div>

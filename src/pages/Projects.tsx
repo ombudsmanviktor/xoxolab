@@ -1,8 +1,9 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { Plus, Settings, Users, LogOut, Folder, Trash2, FlaskConical, SlidersHorizontal } from 'lucide-react'
+import { Plus, Settings, Users, LogOut, Folder, Trash2, FlaskConical, SlidersHorizontal, Sun, Moon } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
+import { useTheme } from '@/contexts/ThemeContext'
 import { listProjects, createProject, saveProjectMeta, deleteProject } from '@/lib/storage'
 import { registerUserEmail } from '@/lib/storage'
 import { Button } from '@/components/ui/button'
@@ -16,6 +17,7 @@ import type { ProjectMeta } from '@/types'
 
 export function Projects() {
   const { session, signOut, isDemoMode } = useAuth()
+  const { isDark, toggle: toggleTheme } = useTheme()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const { toasts, toast, dismiss } = useToast()
@@ -126,6 +128,13 @@ export function Projects() {
         </div>
         <div className="flex items-center gap-3">
           <span className="text-sm text-gray-500 dark:text-gray-400 hidden sm:block">{session?.email}</span>
+          <button
+            onClick={toggleTheme}
+            title={isDark ? 'Modo claro' : 'Modo escuro'}
+            className="p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+          >
+            {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+          </button>
           <Button variant="ghost" size="icon" onClick={() => navigate('/settings')} title="Configurações da conta">
             <SlidersHorizontal className="w-4 h-4" />
           </Button>

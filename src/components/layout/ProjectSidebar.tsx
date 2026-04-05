@@ -22,10 +22,10 @@ const NAV_ITEMS = [
   { to: 'senhas',     label: 'Senhas',            icon: KeyRound,     activeClass: 'bg-slate-50 text-slate-700 dark:bg-slate-800 dark:text-slate-300',       iconClass: 'text-slate-600' },
 ]
 
-const AppLogo = () => (
+const AppLogo = ({ gid = 'sg' }: { gid?: string }) => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none" className="w-full h-full">
-    <defs><linearGradient id="sg" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse"><stop offset="0%" stopColor="#a78bfa"/><stop offset="100%" stopColor="#6d28d9"/></linearGradient></defs>
-    <rect width="32" height="32" rx="9" fill="url(#sg)"/>
+    <defs><linearGradient id={gid} x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse"><stop offset="0%" stopColor="#a78bfa"/><stop offset="100%" stopColor="#6d28d9"/></linearGradient></defs>
+    <rect width="32" height="32" rx="9" fill={`url(#${gid})`}/>
     <rect x="4"    y="5.5" width="7" height="2.5" rx="1.2" fill="white" opacity="0.55"/>
     <rect x="12.5" y="5.5" width="7" height="2.5" rx="1.2" fill="white" opacity="0.55"/>
     <rect x="21"   y="5.5" width="7" height="2.5" rx="1.2" fill="white" opacity="0.55"/>
@@ -76,7 +76,7 @@ export function ProjectSidebar() {
         </button>
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 flex-shrink-0">
-            <AppLogo />
+            <AppLogo gid="sg-sidebar" />
           </div>
           <div className="min-w-0">
             <p className="font-semibold text-gray-900 dark:text-white text-sm truncate">
@@ -152,7 +152,7 @@ export function ProjectSidebar() {
         </button>
         <div className="flex items-center gap-2">
           <div className="w-7 h-7 flex-shrink-0">
-            <AppLogo />
+            <AppLogo gid="sg-mobile" />
           </div>
           <span className="font-semibold text-gray-900 dark:text-white text-sm">xoxoLAB</span>
         </div>
